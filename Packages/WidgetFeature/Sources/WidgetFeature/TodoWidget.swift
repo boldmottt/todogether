@@ -76,18 +76,7 @@ public struct TodoWidgetMediumView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 ForEach(entry.todos.prefix(4)) { todo in
-                    Button(intent: ToggleTodoIntent(todoID: todo.id.uuidString)) {
-                        HStack(spacing: 8) {
-                            Image(systemName: todo.isCompleted ? "checkmark.circle.fill" : "circle")
-                                .foregroundStyle(todo.isCompleted ? .green : .secondary)
-                            Text(todo.title)
-                                .strikethrough(todo.isCompleted)
-                                .foregroundStyle(todo.isCompleted ? .secondary : .primary)
-                                .lineLimit(1)
-                            Spacer()
-                        }
-                    }
-                    .buttonStyle(.plain)
+                    TodoRow(todo: todo)
                 }
             }
             Spacer(minLength: 0)

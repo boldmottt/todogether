@@ -51,9 +51,10 @@ struct WeekStripView: View {
     private var weekDates: [Date] {
         let cal = Calendar.current
         let base = cal.date(byAdding: .weekOfYear, value: weekOffset, to: Date()) ?? Date()
-        let startOfWeek = cal.date(
-            from: cal.dateComponents([.yearForWeekOfYear, .weekOfYear], from: base)
-        ) ?? base
+        // 월간 그리드와 동일하게 일요일 시작으로 고정 (locale firstWeekday 무시)
+        let startOfBaseDay = cal.startOfDay(for: base)
+        let weekdayIndex = cal.component(.weekday, from: startOfBaseDay) - 1 // 0=일
+        let startOfWeek = cal.date(byAdding: .day, value: -weekdayIndex, to: startOfBaseDay) ?? startOfBaseDay
         return (0..<7).compactMap { cal.date(byAdding: .day, value: $0, to: startOfWeek) }
     }
 

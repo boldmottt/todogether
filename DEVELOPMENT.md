@@ -56,6 +56,24 @@ cd Packages/RecurringFeature
 swift test
 ```
 
+## 위젯 익스텐션 설정 (Xcode에서)
+
+- `TodogetherWidgetBundle`(WidgetFeature)에는 `@main`이 없음 — 의도된 것.
+  `@main`은 **위젯 Extension 타겟**에 두어야 함. 라이브러리에 두면 앱·익스텐션
+  양쪽에 entry point가 중복되어 빌드 실패. 익스텐션 타겟에 아래 같은 thin 파일 추가:
+  ```swift
+  import WidgetKit
+  import WidgetFeature
+
+  @main
+  struct TodogetherWidgets: WidgetBundle {
+      var body: some Widget { TodogetherWidget() }
+  }
+  ```
+- 딥링크 스킴 `todogether://todo/<uuid>` — 앱 타겟 Info에 URL Scheme `todogether` 등록.
+  앱의 `onOpenURL`이 `WidgetDeepLink.todoID(from:)`로 파싱.
+- 위젯과 앱이 같은 App Group을 공유해야 `SharedStore`(JSON)와 `NudgeStore`가 동작.
+
 ## App Group ID 교체
 
 `WidgetFeature/Sources/WidgetFeature/SharedStore.swift` 의

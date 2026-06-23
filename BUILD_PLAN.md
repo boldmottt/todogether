@@ -41,7 +41,7 @@
 - [x] E1. NotificationKind/Settings/Batcher/Manager
 - [x] E2. 콕 찌르기(Nudge) 액션 + 1일 1회 제한(NudgeStore) + 스와이프 UI
 - [x] E3. 알림 설정 화면(종류별·방해금지 자정넘김)
-- [~] E4. 독립 리뷰 (H와 함께 진행 중)
+- [x] E4. 독립 리뷰 통과 (F/H와 일괄; Critical 없음)
 
 ## F. 템플릿 (Template) — 병렬 에이전트
 - [x] F1. 항목 편집(선행 인덱스·상대마감) TemplateItemEditorView
@@ -49,17 +49,17 @@
 - [x] F3. 기본 템플릿 시드 seedDefaultTemplatesIfNeeded
 - [x] F4. Preview (독립 리뷰는 G/H와 함께 일괄 예정)
 
-## G. 위젯 (Widget)
-- [ ] G1. Small/Medium 뷰 분기 + entryView
-- [ ] G2. 앱→위젯 동기화 훅 (완료/추가 시 SharedStore.sync)
-- [ ] G3. 딥링크(widgetURL) 처리
-- [ ] G4. 리뷰
+## G. 위젯 (Widget) — 병렬 에이전트
+- [x] G1. Small/Medium/Large 뷰 + widgetFamily 분기 entryView
+- [x] G2. WidgetSyncing.refresh 훅 + 앱 scenePhase active 시 동기화
+- [x] G3. 딥링크: TodoRow는 체크=토글 / 제목=Link, 앱 onOpenURL 파싱
+- [x] G4. 에이전트 리뷰 통과 (중복심볼 없음; Button+widgetURL 충돌 수정; @main은 익스텐션 타겟에 — 문서화)
 
-## H. 달력/피드 (Calendar)
-- [ ] H1. 마감 지남/오늘/내일 섹션 분리
-- [ ] H2. 월간 dot 인디케이터
-- [ ] H3. 공유방 색상 점
-- [ ] H4. Preview + 리뷰
+## H. 달력/피드 (Calendar) — 병렬 에이전트
+- [x] H1. 마감지남/오늘/내일/이번주 섹션 (메모리 분류)
+- [x] H2. 월간 그리드 + dot 인디케이터 + 주↔월 전환
+- [x] H3. 공유방 색상 점
+- [x] H4. Preview + 에이전트 리뷰 (주 시작 일요일 통일 수정)
 
 ## I. 통합/마감
 - [ ] I1. 온보딩 3단계
