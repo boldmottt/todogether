@@ -43,11 +43,11 @@
 - [ ] E3. 알림 설정 화면 (종류별·공유방별·방해금지)
 - [ ] E4. 리뷰
 
-## F. 템플릿 (Template)
-- [ ] F1. 템플릿 항목에 선행/상대마감 편집 UI
-- [ ] F2. 인스턴스화 시트 (기준일·대상 공유방 선택)
-- [ ] F3. 기본 제공 템플릿 시드
-- [ ] F4. Preview + 리뷰
+## F. 템플릿 (Template) — 병렬 에이전트
+- [x] F1. 항목 편집(선행 인덱스·상대마감) TemplateItemEditorView
+- [x] F2. 인스턴스화 시트(기준일·대상 공유방)
+- [x] F3. 기본 템플릿 시드 seedDefaultTemplatesIfNeeded
+- [x] F4. Preview (독립 리뷰는 G/H와 함께 일괄 예정)
 
 ## G. 위젯 (Widget)
 - [ ] G1. Small/Medium 뷰 분기 + entryView
