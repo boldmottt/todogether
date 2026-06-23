@@ -235,6 +235,13 @@ public struct TodoRowView: View {
             }
             .buttonStyle(.plain)
 
+            // C3: 공유방 색상 점
+            if let space = todo.space {
+                Circle()
+                    .fill(Color(todoHex: space.colorHex))
+                    .frame(width: 8, height: 8)
+            }
+
             VStack(alignment: .leading, spacing: 2) {
                 Text(todo.title)
                     .strikethrough(todo.isCompleted)
@@ -430,4 +437,17 @@ public enum ChainManager {
     [a, b, c].forEach { ctx.insert($0) }
     return NavigationStack { TodoListView() }
         .modelContainer(container)
+}
+
+// MARK: - Color hex 헬퍼 (TodoFeature 로컬 — 모듈 간 충돌 없음)
+extension Color {
+    init(todoHex hex: String) {
+        let s = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+        var int: UInt64 = 0
+        Scanner(string: s).scanHexInt64(&int)
+        let r = Double((int >> 16) & 0xFF) / 255
+        let g = Double((int >> 8) & 0xFF) / 255
+        let b = Double(int & 0xFF) / 255
+        self.init(red: r, green: g, blue: b)
+    }
 }

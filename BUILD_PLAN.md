@@ -25,10 +25,11 @@
 - 알려진 한계: nextOccurrence가 weekdays/monthDay를 날짜계산에 미반영 (후속)
 
 ## C. 공유방 (Space)
-- [ ] C1. 공유방 상세 (멤버 목록, 권한 표시)
-- [ ] C2. 초대 시트(UICloudSharingController) 연결
-- [ ] C3. 공유방 색상 코딩을 투두 행에 반영
-- [ ] C4. Preview + 리뷰
+- [x] C1. 공유방 상세 (멤버 목록, 권한 표시, 삭제)
+- [x] C2. 초대 시트(UICloudSharingController + delegate) 연결
+- [x] C3. 공유방 색상 점을 투두 행에 반영
+- [x] C4. Preview + 에이전트 리뷰 통과 (Critical 1 + Should-fix 1 수정)
+- 알려진 한계: SwiftData↔CloudKit 공유 레코드 연결은 스캐폴딩 수준(orphan record)
 
 ## D. 완료 반응 (Reaction) — 부분 구현됨
 - [x] D1. Reaction 모델 + 피커/요약 뷰

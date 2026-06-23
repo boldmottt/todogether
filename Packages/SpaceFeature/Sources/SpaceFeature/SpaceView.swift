@@ -17,12 +17,27 @@ public struct SpaceListView: View {
                 SpaceRowView(space: space)
             }
         }
+        .overlay {
+            if spaces.isEmpty {
+                ContentUnavailableView {
+                    Label("함께할 사람을 초대해보세요", systemImage: "person.2")
+                } description: {
+                    Text("공유방을 만들면 가족·친구와 할 일을 나눌 수 있어요")
+                } actions: {
+                    Button("공유방 만들기") { showCreateSheet = true }
+                        .buttonStyle(.borderedProminent)
+                }
+            }
+        }
         .navigationTitle("공유방")
         .toolbar {
             Button("추가", systemImage: "plus") { showCreateSheet = true }
         }
         .sheet(isPresented: $showCreateSheet) {
             CreateSpaceView()
+        }
+        .navigationDestination(for: Space.self) { space in
+            SpaceDetailView(space: space)
         }
     }
 }
