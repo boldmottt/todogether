@@ -51,20 +51,4 @@ public struct RecurrencePickerView: View {
     }
 }
 
-// MARK: - 반복 요약 텍스트
-public extension RecurrenceRule {
-    var displayText: String {
-        switch frequency {
-        case .daily:
-            return interval == 1 ? "매일" : "\(interval)일마다"
-        case .weekly:
-            return interval == 1 ? "매주" : "\(interval)주마다"
-        case .monthly:
-            return interval == 1 ? "매월" : "\(interval)개월마다"
-        case .yearly:
-            return interval == 1 ? "매년" : "\(interval)년마다"
-        case .afterCompletion:
-            return "완료 후 \(interval)일"
-        }
-    }
-}
+// 반복 요약 텍스트(displayText)는 SharedModels.RecurrenceRule로 이동 — 양 패키지 공용.

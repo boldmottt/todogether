@@ -239,10 +239,19 @@ public struct TodoRowView: View {
                 Text(todo.title)
                     .strikethrough(todo.isCompleted)
                     .foregroundStyle(todo.status == .locked ? .secondary : .primary)
-                if let due = todo.dueDate {
-                    Text(due, style: .date)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                HStack(spacing: 6) {
+                    if let due = todo.dueDate {
+                        Text(due, style: .date)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    // B3: 반복 배지
+                    if let rule = todo.recurrence {
+                        Label(rule.displayText, systemImage: "repeat")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .labelStyle(.titleAndIcon)
+                    }
                 }
             }
         }

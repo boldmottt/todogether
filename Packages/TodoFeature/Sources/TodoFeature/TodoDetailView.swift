@@ -11,6 +11,7 @@ public struct TodoDetailView: View {
     @State private var hasDueDate: Bool
     @State private var dueDate: Date
     @State private var showPrerequisitePicker = false
+    @State private var showRecurrenceEditor = false
 
     public init(todo: TodoItem) {
         self.todo = todo
@@ -32,6 +33,21 @@ public struct TodoDetailView: View {
                 Toggle("날짜 지정", isOn: $hasDueDate)
                 if hasDueDate {
                     DatePicker("마감일", selection: $dueDate, displayedComponents: [.date])
+                }
+            }
+
+            // 반복 (B1)
+            Section("반복") {
+                Button {
+                    showRecurrenceEditor = true
+                } label: {
+                    HStack {
+                        Label("반복", systemImage: "repeat")
+                            .foregroundStyle(.primary)
+                        Spacer()
+                        Text(todo.recurrence?.displayText ?? "안 함")
+                            .foregroundStyle(.secondary)
+                    }
                 }
             }
 
@@ -67,10 +83,17 @@ public struct TodoDetailView: View {
         .sheet(isPresented: $showPrerequisitePicker) {
             PrerequisitePickerView(todo: todo)
         }
+        .sheet(isPresented: $showRecurrenceEditor) {
+            NavigationStack { RecurrenceEditorView(rule: recurrenceBinding) }
+        }
     }
 
     private var notesBinding: Binding<String> {
         Binding(get: { todo.notes ?? "" }, set: { todo.notes = $0.isEmpty ? nil : $0 })
+    }
+
+    private var recurrenceBinding: Binding<RecurrenceRule?> {
+        Binding(get: { todo.recurrence }, set: { todo.recurrence = $0 })
     }
 
     private var prerequisiteTodos: [TodoItem] {

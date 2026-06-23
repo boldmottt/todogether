@@ -18,10 +18,11 @@
 - [x] A5. Preview + 에이전트 리뷰 통과 (Critical 2 + Should-fix 2 수정)
 
 ## B. 반복 (Recurring)
-- [ ] B1. 상세 화면에 반복 피커 연결
-- [ ] B2. 요일/일자 커스텀 (weekly 요일선택, monthly 일선택)
-- [ ] B3. 반복 요약 배지 표시
-- [ ] B4. Preview + 리뷰
+- [x] B1. 상세 화면에 반복 편집 연결 (의존방향 위해 TodoFeature에 배치)
+- [x] B2. 요일/일자 커스텀 (weekly 요일선택, monthly 일선택)
+- [x] B3. 반복 요약 배지 표시 (displayText는 SharedModels로 이동)
+- [x] B4. Preview + 에이전트 리뷰 통과
+- 알려진 한계: nextOccurrence가 weekdays/monthDay를 날짜계산에 미반영 (후속)
 
 ## C. 공유방 (Space)
 - [ ] C1. 공유방 상세 (멤버 목록, 권한 표시)

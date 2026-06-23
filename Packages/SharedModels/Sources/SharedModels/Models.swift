@@ -87,6 +87,8 @@ public struct RecurrenceRule: Codable {
     }
 
     public func nextOccurrence(after date: Date) -> Date? {
+        // NOTE: weekly의 weekdays / monthly의 monthDay는 아직 날짜 계산에 미반영.
+        // 현재는 간격(interval) 단위로만 다음 날짜를 구한다. (B 단계 후속 보강 예정)
         var components = DateComponents()
         switch frequency {
         case .daily, .afterCompletion: components.day = interval
@@ -97,6 +99,36 @@ public struct RecurrenceRule: Codable {
         let next = Calendar.current.date(byAdding: components, to: date)
         if let endDate, let next, next > endDate { return nil }
         return next
+    }
+
+    /// 사람이 읽는 요약 문구 (TodoFeature·RecurringFeature 공용)
+    public var displayText: String {
+        switch frequency {
+        case .daily:
+            return interval == 1 ? "매일" : "\(interval)일마다"
+        case .weekly:
+            let base = interval == 1 ? "매주" : "\(interval)주마다"
+            if let weekdays, !weekdays.isEmpty {
+                let names = weekdays.sorted().map { RecurrenceRule.weekdayShortName($0) }.joined(separator: "·")
+                return "\(base) \(names)"
+            }
+            return base
+        case .monthly:
+            let base = interval == 1 ? "매월" : "\(interval)개월마다"
+            if let monthDay { return "\(base) \(monthDay)일" }
+            return base
+        case .yearly:
+            return interval == 1 ? "매년" : "\(interval)년마다"
+        case .afterCompletion:
+            return "완료 후 \(interval)일"
+        }
+    }
+
+    /// 1=일 ... 7=토
+    public static func weekdayShortName(_ weekday: Int) -> String {
+        let names = ["", "일", "월", "화", "수", "목", "금", "토"]
+        guard names.indices.contains(weekday) else { return "" }
+        return names[weekday]
     }
 }
 
