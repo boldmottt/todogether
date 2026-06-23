@@ -63,6 +63,24 @@ public final class NotificationManager {
         center.add(request)
     }
 
+    // MARK: 콕 찌르기 (E2)
+    /// 1일 1회 제한을 적용해 nudge 발송. 보냈으면 true, 제한이면 false.
+    @discardableResult
+    public func sendNudge(
+        todoID: UUID,
+        todoTitle: String,
+        senderID: String,
+        senderName: String,
+        spaceID: UUID?,
+        store: NudgeStore
+    ) -> Bool {
+        guard store.tryNudge(todoID: todoID, senderID: senderID) else { return false }
+        // 실제로는 상대 기기에 전달돼야 하므로 CloudKit 푸시 경로로 나감.
+        // 로컬에서는 발송 사실만 표면화(데모/단일기기).
+        post(.nudge(title: todoTitle, byName: senderName), spaceID: spaceID, todoID: todoID)
+        return true
+    }
+
     // MARK: 마감 알림 예약 (당일/전날 오전 9시)
     public func scheduleDeadlineReminders(for todo: TodoItem) {
         guard let due = todo.dueDate else { return }

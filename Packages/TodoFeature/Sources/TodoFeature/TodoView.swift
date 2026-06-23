@@ -72,6 +72,13 @@ private struct TodoListContent: View {
                                 } label: { Label("완료", systemImage: "checkmark") }
                                 .tint(.green)
                             }
+                            // E2: 공유방 미완료 투두에 콕 찌르기
+                            if todo.space != nil {
+                                Button {
+                                    nudge(todo)
+                                } label: { Label("콕!", systemImage: "hand.point.up.left.fill") }
+                                .tint(.orange)
+                            }
                         }
                         .swipeActions(edge: .trailing) {
                             Button(role: .destructive) {
@@ -156,6 +163,20 @@ private struct TodoListContent: View {
         pendingUndo = nil
         withAnimation { showUndo = false }
     }
+
+    // E2: 콕 찌르기 (1일 1회 제한은 NudgeStore가 강제)
+    private func nudge(_ todo: TodoItem) {
+        NotificationManager.shared.sendNudge(
+            todoID: todo.id,
+            todoTitle: todo.title,
+            senderID: currentUser.id,
+            senderName: currentUser.name,
+            spaceID: todo.space?.id,
+            store: Self.nudgeStore
+        )
+    }
+
+    private static let nudgeStore = NudgeStore()
 }
 
 // MARK: - 삭제 복원용 스냅샷

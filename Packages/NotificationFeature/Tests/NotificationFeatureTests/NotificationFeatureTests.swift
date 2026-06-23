@@ -66,6 +66,35 @@ struct NotificationSettingsTests {
     }
 }
 
+@Suite("NudgeManager")
+struct NudgeManagerTests {
+    @Test func firstNudgeAllowed() {
+        #expect(NudgeManager.canNudge(lastNudge: nil))
+    }
+
+    @Test func sameDayBlocked() {
+        let now = Date()
+        let earlierToday = Calendar.current.date(byAdding: .hour, value: -2, to: now)!
+        #expect(!NudgeManager.canNudge(lastNudge: earlierToday, now: now))
+    }
+
+    @Test func nextDayAllowed() {
+        let now = Date()
+        let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: now)!
+        #expect(NudgeManager.canNudge(lastNudge: yesterday, now: now))
+    }
+
+    @Test func storeEnforcesOncePerDay() {
+        let suite = "test.nudge.\(UUID().uuidString)"
+        let store = NudgeStore(suiteName: suite)
+        let todoID = UUID()
+        #expect(store.tryNudge(todoID: todoID, senderID: "u1"))   // 첫 발송 OK
+        #expect(!store.tryNudge(todoID: todoID, senderID: "u1"))  // 같은 날 두 번째 차단
+        #expect(store.tryNudge(todoID: todoID, senderID: "u2"))   // 다른 사람은 OK
+        UserDefaults(suiteName: suite)?.removePersistentDomain(forName: suite)
+    }
+}
+
 @Suite("ReactionBatcher")
 struct ReactionBatcherTests {
     @Test func singleReaction() {

@@ -37,11 +37,11 @@
 - [ ] D3. 반응 히스토리(주간 기여) 뷰
 - [ ] D4. Preview + 리뷰
 
-## E. 알림 (Notification) — 부분 구현됨
+## E. 알림 (Notification)
 - [x] E1. NotificationKind/Settings/Batcher/Manager
-- [ ] E2. 콕 찌르기(Nudge) 액션 + 1일 1회 제한
-- [ ] E3. 알림 설정 화면 (종류별·공유방별·방해금지)
-- [ ] E4. 리뷰
+- [x] E2. 콕 찌르기(Nudge) 액션 + 1일 1회 제한(NudgeStore) + 스와이프 UI
+- [x] E3. 알림 설정 화면(종류별·방해금지 자정넘김)
+- [~] E4. 독립 리뷰 (H와 함께 진행 중)
 
 ## F. 템플릿 (Template) — 병렬 에이전트
 - [x] F1. 항목 편집(선행 인덱스·상대마감) TemplateItemEditorView
