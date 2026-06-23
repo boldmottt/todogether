@@ -112,6 +112,30 @@ public struct TemplateItem: Codable, Identifiable {
     }
 }
 
+// MARK: - Reaction (완료 이모지 반응)
+@Model
+public final class Reaction {
+    public var id: UUID
+    public var todoID: UUID       // TodoItem과 관계 대신 UUID 직접 참조
+    public var authorID: String   // iCloud User Record ID
+    public var authorName: String // 표시용 이름 캐시
+    public var emoji: String      // "👍"
+    public var createdAt: Date
+
+    public init(todoID: UUID, authorID: String, authorName: String, emoji: String) {
+        self.id = UUID()
+        self.todoID = todoID
+        self.authorID = authorID
+        self.authorName = authorName
+        self.emoji = emoji
+        self.createdAt = Date()
+    }
+}
+
+public extension Reaction {
+    static let availableEmojis = ["👍", "❤️", "🎉", "💪", "😂", "🙏"]
+}
+
 // MARK: - Widget 경량 모델 (App Group 공유용)
 public struct WidgetTodo: Identifiable, Codable {
     public var id: UUID
@@ -130,7 +154,7 @@ public struct WidgetTodo: Identifiable, Codable {
 // MARK: - ModelContainer
 public extension ModelContainer {
     static func makeShared() throws -> ModelContainer {
-        let schema = Schema([Space.self, TodoItem.self, TodoTemplate.self])
+        let schema = Schema([Space.self, TodoItem.self, TodoTemplate.self, Reaction.self])
         let config = ModelConfiguration(
             schema: schema,
             cloudKitDatabase: .automatic
