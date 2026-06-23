@@ -58,4 +58,22 @@ public struct NotificationSettings: Codable, Equatable {
         }
         return true
     }
+
+    public static let `default` = NotificationSettings()
+
+    // MARK: - UserDefaults persistence
+    private static let udKey = "notificationSettings"
+
+    public static func load() -> NotificationSettings {
+        guard let data = UserDefaults.standard.data(forKey: udKey),
+              let decoded = try? JSONDecoder().decode(NotificationSettings.self, from: data)
+        else { return .default }
+        return decoded
+    }
+
+    public func save() {
+        if let data = try? JSONEncoder().encode(self) {
+            UserDefaults.standard.set(data, forKey: Self.udKey)
+        }
+    }
 }

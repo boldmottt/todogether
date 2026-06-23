@@ -4,7 +4,7 @@ import NotificationFeature
 // MARK: - 설정 탭 (BUILD_PLAN 후속: 알림설정 + 앱잠금 토글 노출)
 public struct SettingsView: View {
     @AppStorage("appLockEnabled") private var appLockEnabled = false
-    @State private var notificationSettings = NotificationSettings.default
+    @State private var notificationSettings = NotificationSettings.load()
 
     public init() {}
 
@@ -21,6 +21,7 @@ public struct SettingsView: View {
                 NavigationLink("알림 설정") {
                     NotificationSettingsView(settings: $notificationSettings)
                         .navigationTitle("알림 설정")
+                        .onChange(of: notificationSettings) { _, new in new.save() }
                 }
             } header: {
                 Text("알림")

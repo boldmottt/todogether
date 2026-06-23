@@ -73,14 +73,15 @@ private struct TodoListContent: View {
                                 .tint(.green)
                             }
                             // Donetick "claiming": 공유방 미배정 투두 → "내가 할게"
-                            if todo.space != nil && todo.assigneeID == nil && !todo.isCompleted {
+                            if isClaimable(todo) {
                                 Button {
                                     claim(todo)
                                 } label: { Label("내가 할게", systemImage: "person.badge.plus") }
                                 .tint(.blue)
                             }
-                            // E2: 공유방 미완료 투두에 콕 찌르기 (이미 배정된 경우)
-                            if todo.space != nil && todo.assigneeID != nil {
+                            // E2: 콕 찌르기 — 다른 사람이 담당한 투두에만 (자기 자신 방지)
+                            if todo.space != nil && todo.assigneeID != nil
+                                && todo.assigneeID != currentUser.id {
                                 Button {
                                     nudge(todo)
                                 } label: { Label("콕!", systemImage: "hand.point.up.left.fill") }
@@ -183,8 +184,14 @@ private struct TodoListContent: View {
         )
     }
 
+    private func isClaimable(_ todo: TodoItem) -> Bool {
+        todo.space != nil && todo.assigneeID == nil && !todo.isCompleted
+    }
+
     // Donetick 클레이밍: 미배정 공유방 투두를 현재 사용자가 담당
     private func claim(_ todo: TodoItem) {
+        // Race-condition guard: another user may have claimed between render and tap
+        guard todo.assigneeID == nil else { return }
         todo.assigneeID = currentUser.id
         try? context.save()
     }
@@ -294,7 +301,7 @@ public struct TodoRowView: View {
                             .labelStyle(.titleAndIcon)
                     }
                     // Donetick 클레이밍: 미배정 공유방 투두 강조
-                    if todo.space != nil && todo.assigneeID == nil && !todo.isCompleted {
+                    if isClaimable(todo) {
                         Text("미배정")
                             .font(.caption2)
                             .padding(.horizontal, 4).padding(.vertical, 1)

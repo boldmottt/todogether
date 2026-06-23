@@ -82,7 +82,7 @@ def paste_emoji(img, ch, xy, px):
     return False
 
 def tabbar(d, active=0):
-    items = [("□", "투두"), ("▦", "캘린더"), ("◎", "공유방"), ("▤", "템플릿")]
+    items = [("□", "투두"), ("▦", "캘린더"), ("◎", "공유방"), ("▤", "템플릿"), ("⚙", "설정")]
     y = H - 60 * S
     d.line([(0, y - 6 * S), (W, y - 6 * S)], fill=LINE, width=S)
     n = len(items)
@@ -393,8 +393,78 @@ def notif_settings():
     d.text((28 * S, y), "자정을 넘는 구간(22시~8시)도 설정할 수 있어요", font=f(11), fill=SUB)
     img.save(os.path.join(OUT, "08_notif_settings.png"))
 
+def settings():
+    img, d = base()
+    navbar(d, "설정")
+    y = 100 * S
+    # 보안 섹션
+    d.text((28 * S, y), "보안", font=f(12, True), fill=SUB)
+    y += 24 * S
+    rounded(d, (16 * S, y, W - 16 * S, y + 96 * S), 12 * S, fill=CARD)
+    d.text((32 * S, y + 16 * S), "Face ID / Touch ID 잠금", font=f(14), fill=INK)
+    rounded(d, (W - 76 * S, y + 12 * S, W - 32 * S, y + 36 * S), 12 * S, fill=GREEN)
+    d.ellipse((W - 54 * S, y + 14 * S, W - 34 * S, y + 34 * S), fill=(255, 255, 255))
+    d.text((32 * S, y + 52 * S), "앱 실행 및 백그라운드 복귀 시 생체 인증이 필요합니다.", font=f(11), fill=SUB)
+    y += 120 * S
+    # 알림 섹션
+    d.text((28 * S, y), "알림", font=f(12, True), fill=SUB)
+    y += 24 * S
+    rounded(d, (16 * S, y, W - 16 * S, y + 48 * S), 12 * S, fill=CARD)
+    d.text((32 * S, y + 16 * S), "알림 설정", font=f(14), fill=INK)
+    d.text((W - 32 * S, y + 16 * S), "›", font=f(18), fill=SUB, anchor="rm")
+    y += 72 * S
+    # 앱 정보 섹션
+    d.text((28 * S, y), "앱 정보", font=f(12, True), fill=SUB)
+    y += 24 * S
+    rounded(d, (16 * S, y, W - 16 * S, y + 48 * S), 12 * S, fill=CARD)
+    d.text((32 * S, y + 16 * S), "버전", font=f(14), fill=INK)
+    d.text((W - 32 * S, y + 16 * S), "1.0.0", font=f(14), fill=SUB, anchor="rm")
+    tabbar(d, 4)
+    img.save(os.path.join(OUT, "09_settings.png"))
+
+def todo_list_claiming():
+    """투두 리스트 — 미배정 뱃지 + 클레이밍 스와이프 시각화"""
+    img, d = base()
+    navbar(d, "우리집", left="‹", right_icons=["+"])
+    y = 100 * S
+    rows = [
+        ("circle", "설거지 하기", "오늘", None, PURPLE, False, False),
+        ("circle", "쓰레기 버리기", "내일", None, ORANGE, True, False),   # 미배정
+        ("lock", "요리하기", None, None, PURPLE, False, False),
+    ]
+    card_h = 68 * S
+    rounded(d, (16 * S, y, W - 16 * S, y + card_h * len(rows)), 14 * S, fill=CARD)
+    for i, (icon, title, date, badge, dot, unassigned, done) in enumerate(rows):
+        ry = y + i * card_h
+        cx = 40 * S
+        if icon == "lock":
+            d.ellipse((cx - 11 * S, ry + card_h/2 - 11 * S, cx + 11 * S, ry + card_h/2 + 11 * S), outline=SUB, width=2 * S)
+        else:
+            d.ellipse((cx - 11 * S, ry + card_h/2 - 11 * S, cx + 11 * S, ry + card_h/2 + 11 * S), outline=SUB, width=2 * S)
+        d.ellipse((62 * S, ry + card_h/2 - 5 * S, 72 * S, ry + card_h/2 + 5 * S), fill=dot)
+        d.text((84 * S, ry + 14 * S), title, font=f(16), fill=INK if icon != "lock" else SUB)
+        sub_y = ry + 36 * S
+        if date:
+            d.text((84 * S, sub_y), date, font=f(11), fill=SUB)
+        if unassigned:
+            # 미배정 뱃지
+            bx = 84 * S + (44 * S if date else 0)
+            badge_w = 48 * S
+            rounded(d, (bx, sub_y - 2 * S, bx + badge_w, sub_y + 18 * S), 10 * S, fill=(10, 122, 255, 40))
+            d.text((bx + badge_w // 2, sub_y + 7 * S), "미배정", font=f(10), fill=BLUE, anchor="mm")
+        if i < len(rows) - 1:
+            d.line([(32 * S, ry + card_h), (W - 16 * S, ry + card_h)], fill=LINE, width=S)
+    # 스와이프 힌트 (두번째 행)
+    sy = y + card_h + 4 * S
+    rounded(d, (W - 140 * S, sy, W - 16 * S, sy + card_h - 8 * S), 12 * S, fill=BLUE)
+    d.text((W - 78 * S, sy + card_h // 2 - 8 * S), "내가", font=f(12, True), fill=(255,255,255), anchor="mm")
+    d.text((W - 78 * S, sy + card_h // 2 + 10 * S), "할게", font=f(12, True), fill=(255,255,255), anchor="mm")
+    tabbar(d, 0)
+    img.save(os.path.join(OUT, "10_todo_claiming.png"))
+
 if __name__ == "__main__":
     todo_list(); todo_detail(); calendar(); widget()
     onboarding(); space_detail(); reaction(); notif_settings()
+    settings(); todo_list_claiming()
     print("emoji_color:", _emoji_ok)
     print("rendered:", sorted(os.listdir(OUT)))

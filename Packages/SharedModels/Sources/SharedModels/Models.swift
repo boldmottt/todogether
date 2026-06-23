@@ -94,20 +94,19 @@ public struct RecurrenceRule: Codable {
             next = cal.date(byAdding: .day, value: interval, to: date)
         case .weekly:
             if let weekdays, !weekdays.isEmpty {
-                // Find the next matching weekday within future weeks
                 let sorted = weekdays.sorted()
-                var candidate = cal.date(byAdding: .day, value: 1, to: date)!
-                for _ in 0..<(7 * interval + 7) {
+                // Use day-difference to avoid weekOfYear wrapping at year boundaries
+                var candidate = cal.date(byAdding: .day, value: 1, to: date) ?? date
+                for _ in 0..<(7 * (interval + 1)) {
                     let wd = cal.component(.weekday, from: candidate)
                     if sorted.contains(wd) {
-                        // Must be at least `interval` weeks after date's week
-                        let weeksApart = cal.dateComponents([.weekOfYear], from: date, to: candidate).weekOfYear ?? 0
-                        if weeksApart >= interval {
+                        let days = cal.dateComponents([.day], from: date, to: candidate).day ?? 0
+                        if days >= interval * 7 {
                             next = candidate
                             break
                         }
                     }
-                    candidate = cal.date(byAdding: .day, value: 1, to: candidate)!
+                    candidate = cal.date(byAdding: .day, value: 1, to: candidate) ?? candidate
                 }
                 if next == nil {
                     next = cal.date(byAdding: .weekOfYear, value: interval, to: date)
@@ -117,13 +116,15 @@ public struct RecurrenceRule: Codable {
             }
         case .monthly:
             if let monthDay {
-                // Advance by `interval` months, then set the target day
-                var comps = cal.dateComponents([.year, .month], from: date)
+                // Advance months, clamp to last valid day if monthDay > days-in-month (e.g. 31 in Feb)
+                guard var comps = Optional(cal.dateComponents([.year, .month, .hour, .minute], from: date)) else { break }
                 comps.month = (comps.month ?? 1) + interval
-                comps.day = monthDay
-                comps.hour = cal.component(.hour, from: date)
-                comps.minute = cal.component(.minute, from: date)
-                next = cal.date(from: comps)
+                // Resolve the year/month so we can find the actual range
+                if let anchorDate = cal.date(from: comps),
+                   let range = cal.range(of: .day, in: .month, for: anchorDate) {
+                    comps.day = min(monthDay, range.upperBound - 1)
+                    next = cal.date(from: comps)
+                }
             } else {
                 next = cal.date(byAdding: .month, value: interval, to: date)
             }
