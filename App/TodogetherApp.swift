@@ -14,31 +14,60 @@ struct TodogetherApp: App {
     @State private var deepLinkedTodoID: UUID?
     @Environment(\.scenePhase) private var scenePhase
 
+    @AppStorage("didOnboard") private var didOnboard = false
+    @AppStorage("appLockEnabled") private var appLockEnabled = false
+    @StateObject private var lock: AppLockController
+
     let container: ModelContainer = try! ModelContainer.makeShared()
+
+    init() {
+        let enabled = UserDefaults.standard.bool(forKey: "appLockEnabled")
+        _lock = StateObject(wrappedValue: AppLockController(lockEnabled: enabled))
+    }
 
     var body: some Scene {
         WindowGroup {
-            ContentView(deepLinkedTodoID: $deepLinkedTodoID)
-                .currentUser(currentUser)
-                .task {
-                    NotificationManager.shared.registerCategories()
-                    _ = await NotificationManager.shared.requestAuthorization()
-                    // TODO: CloudKit userRecordID + iCloud 이름으로 currentUser 채우기
-                }
-                // 위젯 딥링크 수신 (todogether://todo/<id>)
-                .onOpenURL { url in
-                    if let id = WidgetDeepLink.todoID(from: url) {
-                        deepLinkedTodoID = id
+            ZStack {
+                ContentView(deepLinkedTodoID: $deepLinkedTodoID)
+                    .currentUser(currentUser)
+                    .task {
+                        NotificationManager.shared.registerCategories()
+                        _ = await NotificationManager.shared.requestAuthorization()
+                        // TODO: CloudKit userRecordID + iCloud 이름으로 currentUser 채우기
                     }
+                    .onOpenURL { url in
+                        if let id = WidgetDeepLink.todoID(from: url) {
+                            deepLinkedTodoID = id
+                        }
+                    }
+
+                if lock.isLocked {
+                    LockScreenView { Task { await lock.authenticate() } }
                 }
+
+                if !didOnboard {
+                    OnboardingView { didOnboard = true }
+                        .background(.background)
+                }
+            }
+            // 콜드 스타트 시 1회 인증 (앱은 이미 active로 시작 → onChange 미발생 대비)
+            .task { await lock.authenticate() }
         }
         .modelContainer(container)
-        // 앱이 활성화될 때 위젯 저장소를 최신 투두로 동기화
         .onChange(of: scenePhase) { _, phase in
-            if phase == .active {
+            switch phase {
+            case .active:
                 let todos = (try? container.mainContext.fetch(FetchDescriptor<TodoItem>())) ?? []
                 WidgetSyncing.refresh(from: todos)
+                // 활성화될 때만 인증 트리거 (백그라운드 중 보이지 않는 프롬프트 방지)
+                Task { await lock.authenticate() }
+            case .background:
+                lock.relock()
+            default: break
             }
+        }
+        .onChange(of: appLockEnabled) { _, enabled in
+            lock.lockEnabled = enabled
         }
     }
 }

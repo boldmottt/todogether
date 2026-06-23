@@ -31,11 +31,11 @@
 - [x] C4. Preview + 에이전트 리뷰 통과 (Critical 1 + Should-fix 1 수정)
 - 알려진 한계: SwiftData↔CloudKit 공유 레코드 연결은 스캐폴딩 수준(orphan record)
 
-## D. 완료 반응 (Reaction) — 부분 구현됨
+## D. 완료 반응 (Reaction)
 - [x] D1. Reaction 모델 + 피커/요약 뷰
-- [ ] D2. 완료 애니메이션 → 반응 유도 흐름 다듬기
-- [ ] D3. 반응 히스토리(주간 기여) 뷰
-- [ ] D4. Preview + 리뷰
+- [x] D2. 완료된 공유 투두 long-press → 피커 노출 + 자동 닫힘
+- [x] D3. 반응 히스토리(이번 주 기여) ReactionHistoryView
+- [x] D4. Preview + 최종 리뷰 일괄
 
 ## E. 알림 (Notification)
 - [x] E1. NotificationKind/Settings/Batcher/Manager
@@ -62,7 +62,8 @@
 - [x] H4. Preview + 에이전트 리뷰 (주 시작 일요일 통일 수정)
 
 ## I. 통합/마감
-- [ ] I1. 온보딩 3단계
-- [ ] I2. 빈 상태 뷰 일괄
-- [ ] I3. 앱 잠금(Face ID) 옵션
-- [ ] I4. 최종 통합 리뷰
+- [x] I1. 온보딩 3단계 (OnboardingView, AppStorage didOnboard)
+- [x] I2. 빈 상태 뷰 (투두/공유방/템플릿/캘린더/반응)
+- [x] I3. 앱 잠금(Face ID/Touch ID) AppLockController + LockScreenView
+- [x] I4. 최종 통합 리뷰 통과 (Critical 1 + Should-fix 1 수정: 백그라운드 인증 가드)
+- 후속: 설정 탭(알림설정·앱잠금 토글) 노출, 딥링크 라우팅 실제 연결
