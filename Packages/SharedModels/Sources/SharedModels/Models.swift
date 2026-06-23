@@ -87,16 +87,49 @@ public struct RecurrenceRule: Codable {
     }
 
     public func nextOccurrence(after date: Date) -> Date? {
-        // NOTE: weekly의 weekdays / monthly의 monthDay는 아직 날짜 계산에 미반영.
-        // 현재는 간격(interval) 단위로만 다음 날짜를 구한다. (B 단계 후속 보강 예정)
-        var components = DateComponents()
+        let cal = Calendar.current
+        var next: Date?
         switch frequency {
-        case .daily, .afterCompletion: components.day = interval
-        case .weekly: components.weekOfYear = interval
-        case .monthly: components.month = interval
-        case .yearly: components.year = interval
+        case .daily, .afterCompletion:
+            next = cal.date(byAdding: .day, value: interval, to: date)
+        case .weekly:
+            if let weekdays, !weekdays.isEmpty {
+                // Find the next matching weekday within future weeks
+                let sorted = weekdays.sorted()
+                var candidate = cal.date(byAdding: .day, value: 1, to: date)!
+                for _ in 0..<(7 * interval + 7) {
+                    let wd = cal.component(.weekday, from: candidate)
+                    if sorted.contains(wd) {
+                        // Must be at least `interval` weeks after date's week
+                        let weeksApart = cal.dateComponents([.weekOfYear], from: date, to: candidate).weekOfYear ?? 0
+                        if weeksApart >= interval {
+                            next = candidate
+                            break
+                        }
+                    }
+                    candidate = cal.date(byAdding: .day, value: 1, to: candidate)!
+                }
+                if next == nil {
+                    next = cal.date(byAdding: .weekOfYear, value: interval, to: date)
+                }
+            } else {
+                next = cal.date(byAdding: .weekOfYear, value: interval, to: date)
+            }
+        case .monthly:
+            if let monthDay {
+                // Advance by `interval` months, then set the target day
+                var comps = cal.dateComponents([.year, .month], from: date)
+                comps.month = (comps.month ?? 1) + interval
+                comps.day = monthDay
+                comps.hour = cal.component(.hour, from: date)
+                comps.minute = cal.component(.minute, from: date)
+                next = cal.date(from: comps)
+            } else {
+                next = cal.date(byAdding: .month, value: interval, to: date)
+            }
+        case .yearly:
+            next = cal.date(byAdding: .year, value: interval, to: date)
         }
-        let next = Calendar.current.date(byAdding: components, to: date)
         if let endDate, let next, next > endDate { return nil }
         return next
     }

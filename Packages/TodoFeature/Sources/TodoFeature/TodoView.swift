@@ -72,8 +72,15 @@ private struct TodoListContent: View {
                                 } label: { Label("완료", systemImage: "checkmark") }
                                 .tint(.green)
                             }
-                            // E2: 공유방 미완료 투두에 콕 찌르기
-                            if todo.space != nil {
+                            // Donetick "claiming": 공유방 미배정 투두 → "내가 할게"
+                            if todo.space != nil && todo.assigneeID == nil && !todo.isCompleted {
+                                Button {
+                                    claim(todo)
+                                } label: { Label("내가 할게", systemImage: "person.badge.plus") }
+                                .tint(.blue)
+                            }
+                            // E2: 공유방 미완료 투두에 콕 찌르기 (이미 배정된 경우)
+                            if todo.space != nil && todo.assigneeID != nil {
                                 Button {
                                     nudge(todo)
                                 } label: { Label("콕!", systemImage: "hand.point.up.left.fill") }
@@ -174,6 +181,12 @@ private struct TodoListContent: View {
             spaceID: todo.space?.id,
             store: Self.nudgeStore
         )
+    }
+
+    // Donetick 클레이밍: 미배정 공유방 투두를 현재 사용자가 담당
+    private func claim(_ todo: TodoItem) {
+        todo.assigneeID = currentUser.id
+        try? context.save()
     }
 
     private static let nudgeStore = NudgeStore()
@@ -279,6 +292,14 @@ public struct TodoRowView: View {
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                             .labelStyle(.titleAndIcon)
+                    }
+                    // Donetick 클레이밍: 미배정 공유방 투두 강조
+                    if todo.space != nil && todo.assigneeID == nil && !todo.isCompleted {
+                        Text("미배정")
+                            .font(.caption2)
+                            .padding(.horizontal, 4).padding(.vertical, 1)
+                            .background(.blue.opacity(0.15), in: Capsule())
+                            .foregroundStyle(.blue)
                     }
                 }
             }

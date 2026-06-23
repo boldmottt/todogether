@@ -102,6 +102,11 @@ struct ContentView: View {
                 TemplateListView()
             }
             .tabItem { Label("템플릿", systemImage: "square.on.square") }
+
+            NavigationStack {
+                SettingsView()
+            }
+            .tabItem { Label("설정", systemImage: "gear") }
         }
     }
 }
