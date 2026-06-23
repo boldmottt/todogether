@@ -21,6 +21,9 @@ public struct TodoListView: View {
             .sheet(isPresented: $showAddSheet) {
                 AddTodoView(space: space)
             }
+            .navigationDestination(for: TodoItem.self) { todo in
+                TodoDetailView(todo: todo)
+            }
     }
 }
 
@@ -28,31 +31,188 @@ public struct TodoListView: View {
 private struct TodoListContent: View {
     let space: Space?
     @Environment(\.currentUser) private var currentUser
+    @Environment(\.modelContext) private var context
     @Query private var todos: [TodoItem]
+    @State private var hideCompleted = false
+    @State private var pendingUndo: TodoSnapshot?
+    @State private var showUndo = false
 
     init(space: Space?) {
         self.space = space
-        // space가 있으면 해당 공유방 투두만, 없으면 전체
-        if let space {
-            _todos = Query(
-                filter: #Predicate { $0.space?.id == space.id },
-                sort: \.dueDate
-            )
-        } else {
-            _todos = Query(sort: \TodoItem.dueDate)
-        }
+        // #Predicate에서 옵셔널 관계 traverse($0.space?.id)는 SwiftData에서 불안정 →
+        // 정렬만 해서 전체를 가져온 뒤 공유방 필터는 메모리에서 처리한다.
+        _todos = Query(sort: \TodoItem.dueDate)
+    }
+
+    // 현재 화면 범위(개인 / 특정 공유방)에 해당하는 투두만
+    private var scoped: [TodoItem] {
+        todos.filter { $0.space?.id == space?.id }
+    }
+
+    // A4: 활성/완료 분리. 완료는 최근 7일치만.
+    private var activeTodos: [TodoItem] {
+        scoped.filter { !$0.isCompleted }
+    }
+    private var recentCompleted: [TodoItem] {
+        let weekAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? .distantPast
+        return scoped
+            .filter { $0.isCompleted && ($0.completedAt ?? .distantPast) >= weekAgo }
+            .sorted { ($0.completedAt ?? .distantPast) > ($1.completedAt ?? .distantPast) }
     }
 
     var body: some View {
         List {
-            ForEach(todos) { todo in
-                ReactableTodoRow(
-                    todo: todo,
-                    currentUserID: currentUser.id,
-                    currentUserName: currentUser.name
-                )
+            Section {
+                ForEach(activeTodos) { todo in
+                    row(todo)
+                        .swipeActions(edge: .leading) {
+                            if todo.status == .available {
+                                Button {
+                                    ChainManager.complete(todo, context: context)
+                                } label: { Label("완료", systemImage: "checkmark") }
+                                .tint(.green)
+                            }
+                        }
+                        .swipeActions(edge: .trailing) {
+                            Button(role: .destructive) {
+                                delete(todo)
+                            } label: { Label("삭제", systemImage: "trash") }
+                        }
+                }
+            } header: {
+                if activeTodos.isEmpty && recentCompleted.isEmpty {
+                    EmptyView()
+                }
+            }
+
+            if !hideCompleted && !recentCompleted.isEmpty {
+                Section("완료됨 · 최근 7일") {
+                    ForEach(recentCompleted) { todo in
+                        row(todo)
+                            .swipeActions(edge: .trailing) {
+                                Button(role: .destructive) { delete(todo) } label: {
+                                    Label("삭제", systemImage: "trash")
+                                }
+                            }
+                    }
+                }
             }
         }
+        .overlay {
+            if activeTodos.isEmpty && recentCompleted.isEmpty {
+                ContentUnavailableView {
+                    Label(space == nil ? "오늘 할 일이 없어요" : "\(space?.name ?? "")방의 첫 할 일을 추가해봐요",
+                          systemImage: "checklist")
+                }
+            }
+        }
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Menu {
+                    Toggle("완료 숨기기", isOn: $hideCompleted)
+                } label: { Image(systemName: "line.3.horizontal.decrease.circle") }
+            }
+        }
+        .overlay(alignment: .bottom) {
+            if showUndo {
+                UndoToast(message: "삭제됨") { undoDelete() }
+                    .padding(.bottom, 8)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func row(_ todo: TodoItem) -> some View {
+        NavigationLink(value: todo) {
+            ReactableTodoRow(
+                todo: todo,
+                currentUserID: currentUser.id,
+                currentUserName: currentUser.name
+            )
+        }
+    }
+
+    // A3: 삭제 + Undo
+    private func delete(_ todo: TodoItem) {
+        let snap = TodoSnapshot(from: todo)
+        pendingUndo = snap
+        context.delete(todo)
+        withAnimation { showUndo = true }
+        Task {
+            try? await Task.sleep(for: .seconds(5))
+            // 그 사이 다른 삭제/실행취소가 일어났으면 건드리지 않는다 (레이스 방지)
+            if pendingUndo?.id == snap.id {
+                withAnimation { showUndo = false }
+                pendingUndo = nil
+            }
+        }
+    }
+
+    private func undoDelete() {
+        guard let snap = pendingUndo else { return }
+        let restored = snap.makeTodo(space: space)
+        context.insert(restored)
+        pendingUndo = nil
+        withAnimation { showUndo = false }
+    }
+}
+
+// MARK: - 삭제 복원용 스냅샷
+private struct TodoSnapshot {
+    let id: UUID            // 원래 식별자 보존 → 다른 투두의 선행 참조가 깨지지 않음
+    let title: String
+    let notes: String?
+    let dueDate: Date?
+    let isCompleted: Bool
+    let completedAt: Date?
+    let status: TodoStatus
+    let prerequisiteIDs: [UUID]
+    let recurrenceData: Data?
+
+    init(from todo: TodoItem) {
+        id = todo.id
+        title = todo.title
+        notes = todo.notes
+        dueDate = todo.dueDate
+        isCompleted = todo.isCompleted
+        completedAt = todo.completedAt
+        status = todo.status
+        prerequisiteIDs = todo.prerequisiteIDs
+        recurrenceData = todo.recurrenceData
+    }
+
+    func makeTodo(space: Space?) -> TodoItem {
+        let t = TodoItem(title: title, space: space)
+        t.id = id          // 원래 id 복원
+        t.notes = notes
+        t.dueDate = dueDate
+        t.isCompleted = isCompleted
+        t.completedAt = completedAt
+        t.status = status
+        t.prerequisiteIDs = prerequisiteIDs
+        t.recurrenceData = recurrenceData
+        return t
+    }
+}
+
+// MARK: - Undo 토스트
+private struct UndoToast: View {
+    let message: String
+    let onUndo: () -> Void
+
+    var body: some View {
+        HStack {
+            Text(message)
+            Spacer()
+            Button("실행 취소", action: onUndo)
+                .fontWeight(.semibold)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(.regularMaterial, in: Capsule())
+        .shadow(radius: 8, y: 2)
+        .padding(.horizontal, 24)
     }
 }
 
@@ -178,6 +338,45 @@ public enum ChainManager {
         unlockDependents(of: todo, context: context)
     }
 
+    /// 선행 조건 추가 시 순환 참조 검사. true면 사이클이 생기므로 거부해야 함.
+    /// prereq를 todo의 선행으로 추가하면 prereq가 (간접적으로) todo에 의존하는지 검사.
+    public static func wouldCreateCycle(
+        addingPrerequisite prereq: TodoItem,
+        to todo: TodoItem,
+        allTodos: [TodoItem]
+    ) -> Bool {
+        let byID = Dictionary(uniqueKeysWithValues: allTodos.map { ($0.id, $0) })
+        var visited = Set<UUID>()
+
+        // prereq에서 출발해 선행 사슬을 따라가다 todo.id를 만나면 사이클
+        func reaches(_ currentID: UUID) -> Bool {
+            if currentID == todo.id { return true }
+            if !visited.insert(currentID).inserted { return false }
+            let prereqs = byID[currentID]?.prerequisiteIDs ?? []
+            return prereqs.contains(where: reaches)
+        }
+        return reaches(prereq.id)
+    }
+
+    /// 선행 조건 추가 (사이클이면 false 반환, 추가 안 함)
+    @discardableResult
+    public static func addPrerequisite(
+        _ prereq: TodoItem,
+        to todo: TodoItem,
+        allTodos: [TodoItem]
+    ) -> Bool {
+        guard prereq.id != todo.id else { return false }
+        guard !todo.prerequisiteIDs.contains(prereq.id) else { return true }
+        guard !wouldCreateCycle(addingPrerequisite: prereq, to: todo, allTodos: allTodos) else {
+            return false
+        }
+        todo.prerequisiteIDs.append(prereq.id)
+        if !prereq.isCompleted {
+            todo.status = .locked
+        }
+        return true
+    }
+
     private static func unlockDependents(of completed: TodoItem, context: ModelContext) {
         let completedID = completed.id
         let descriptor = FetchDescriptor<TodoItem>(
@@ -207,4 +406,19 @@ public enum ChainManager {
             }
         }
     }
+}
+
+// MARK: - Preview (시각 검증 대체물)
+#Preview("투두 리스트") {
+    let container = try! ModelContainer(
+        for: TodoItem.self, Space.self,
+        configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+    )
+    let ctx = container.mainContext
+    let a = TodoItem(title: "장보기"); a.dueDate = Date()
+    let b = TodoItem(title: "요리하기"); b.status = .locked; b.prerequisiteIDs = [a.id]
+    let c = TodoItem(title: "설거지"); c.isCompleted = true; c.completedAt = Date(); c.status = .completed
+    [a, b, c].forEach { ctx.insert($0) }
+    return NavigationStack { TodoListView() }
+        .modelContainer(container)
 }
