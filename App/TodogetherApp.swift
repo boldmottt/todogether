@@ -5,12 +5,21 @@ import SpaceFeature
 import TodoFeature
 import CalendarFeature
 import TemplateFeature
+import NotificationFeature
 
 @main
 struct TodogetherApp: App {
+    @State private var currentUser: CurrentUser = .local
+
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .currentUser(currentUser)
+                .task {
+                    NotificationManager.shared.registerCategories()
+                    _ = await NotificationManager.shared.requestAuthorization()
+                    // TODO: CloudKit userRecordID + iCloud 이름으로 currentUser 채우기
+                }
         }
         .modelContainer(try! ModelContainer.makeShared())
     }

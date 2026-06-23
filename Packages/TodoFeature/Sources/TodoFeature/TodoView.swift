@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 import SharedModels
+import NotificationFeature
 
 // MARK: - 투두 리스트 뷰
 public struct TodoListView: View {
@@ -26,6 +27,7 @@ public struct TodoListView: View {
 // MARK: - 리스트 내용 (Query를 위해 분리)
 private struct TodoListContent: View {
     let space: Space?
+    @Environment(\.currentUser) private var currentUser
     @Query private var todos: [TodoItem]
 
     init(space: Space?) {
@@ -44,7 +46,11 @@ private struct TodoListContent: View {
     var body: some View {
         List {
             ForEach(todos) { todo in
-                TodoRowView(todo: todo)
+                ReactableTodoRow(
+                    todo: todo,
+                    currentUserID: currentUser.id,
+                    currentUserName: currentUser.name
+                )
             }
         }
     }
@@ -147,7 +153,13 @@ public enum ChainManager {
         todo.completedAt = Date()
         todo.status = .completed
 
-        // 반복이면 다음 투두 생성
+        // 예약돼 있던 마감 알림 취소
+        let completedID = todo.id
+        Task { @MainActor in
+            NotificationManager.shared.cancelDeadlineReminders(for: completedID)
+        }
+
+        // 반복이면 다음 투두 생성 + 마감 알림 재예약
         if let rule = todo.recurrence {
             let base: Date = rule.frequency == .afterCompletion ? Date() : (todo.dueDate ?? Date())
             if let nextDate = rule.nextOccurrence(after: base) {
@@ -156,6 +168,9 @@ public enum ChainManager {
                 next.recurrence = rule
                 next.templateID = todo.templateID
                 context.insert(next)
+                Task { @MainActor in
+                    NotificationManager.shared.scheduleDeadlineReminders(for: next)
+                }
             }
         }
 
@@ -179,6 +194,17 @@ public enum ChainManager {
 
         for todo in locked where todo.prerequisiteIDs.allSatisfy({ allDone.contains($0) }) {
             todo.status = .available
+            // ★ 시그니처 알림: "이제 할 수 있어요"
+            let title = todo.title
+            let spaceID = todo.space?.id
+            let todoID = todo.id
+            Task { @MainActor in
+                NotificationManager.shared.post(
+                    .chainUnlocked(title: title),
+                    spaceID: spaceID,
+                    todoID: todoID
+                )
+            }
         }
     }
 }

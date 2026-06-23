@@ -10,11 +10,12 @@ let package = Package(
     dependencies: [
         .package(path: "../SharedModels"),
         .package(path: "../SpaceFeature"),
+        .package(path: "../NotificationFeature"),
     ],
     targets: [
         .target(
             name: "TodoFeature",
-            dependencies: ["SharedModels", "SpaceFeature"],
+            dependencies: ["SharedModels", "SpaceFeature", "NotificationFeature"],
             path: "Sources/TodoFeature"
         ),
         .testTarget(

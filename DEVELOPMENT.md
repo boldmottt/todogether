@@ -6,11 +6,12 @@
 Packages/
 ├── SharedModels/       ← 데이터 모델 (모든 패키지의 공통 의존)
 ├── SpaceFeature/       ← 공유방 UI + CloudKit 공유
-├── TodoFeature/        ← 투두 CRUD + 연계형 체인
+├── TodoFeature/        ← 투두 CRUD + 연계형 체인 + 완료 반응(이모지)
 ├── RecurringFeature/   ← 반복 규칙 선택 UI
 ├── TemplateFeature/    ← 템플릿 생성 + 인스턴스화
 ├── WidgetFeature/      ← WidgetKit + App Group 공유 저장소
-└── CalendarFeature/    ← 달력뷰 + 피드뷰
+├── CalendarFeature/    ← 달력뷰 + 피드뷰
+└── NotificationFeature/← 알림(마감/연계 해제/완료/반응/콕 찌르기)
 ```
 
 ## 의존 관계
@@ -18,10 +19,12 @@ Packages/
 ```
 SharedModels
     ↑
-SpaceFeature ← TodoFeature ← RecurringFeature
-                           ← TemplateFeature
-                           ← CalendarFeature
+SpaceFeature ─┐
+NotificationFeature ─┴→ TodoFeature ← RecurringFeature
+                                    ← TemplateFeature
+                                    ← CalendarFeature
 SharedModels ← WidgetFeature (TodoFeature 의존 없음 — 경량 유지)
+SharedModels ← NotificationFeature
 ```
 
 ## 병렬 작업 브랜치 전략
