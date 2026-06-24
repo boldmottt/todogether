@@ -281,7 +281,11 @@ struct FeedRowView: View {
             }
             TodoRowView(todo: todo)
         }
-        .listRowBackground(isOverdue ? Color.red.opacity(0.08) : Color.clear)
+        .listRowBackground(
+            isOverdue
+                ? RuledRowBackground(seed: todo.id.hashValue, paperColor: Color.red.opacity(0.05))
+                : RuledRowBackground(seed: todo.id.hashValue)
+        )
     }
 }
 

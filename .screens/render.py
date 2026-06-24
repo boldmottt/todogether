@@ -167,11 +167,9 @@ def draw_checkmark(d, x, y, size, seed):
 
 # ---------------- 1. Todo List ----------------
 def sk_base():
-    """새 스타일 베이스 — 흰 종이 + 줄선"""
+    """베이스 — 흰 종이 (줄은 각 행 하단에 개별 그리기)"""
     img = Image.new("RGB", (W, H), SK_PAPER)
     d = ImageDraw.Draw(img)
-    for i in range(50):
-        draw_ink_line(d, (52 + i * 44) * S, W, seed=i*137+17, thickness=1.3, alpha=0.16)
     d.text((20*S, 14*S), "9:41", font=f(14,True), fill=SK_INK)
     d.text((W-70*S, 14*S), "▮▮▮ ▮", font=f(12), fill=SK_INK)
     return img, d
@@ -366,8 +364,6 @@ def calendar():
 def widget():
     img = Image.new("RGB", (W, H), SK_PAPER)
     d = ImageDraw.Draw(img)
-    for i in range(50):
-        draw_ink_line(d, (52+i*44)*S, W, seed=i*137+17, thickness=1.3, alpha=0.13)
     d.text((20*S, 14*S), "9:41", font=f(14,True), fill=SK_INK)
 
     mx, my = int(24*S), int(160*S)

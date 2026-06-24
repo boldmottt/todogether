@@ -66,7 +66,7 @@ private struct TodoListContent: View {
             Section {
                 ForEach(activeTodos) { todo in
                     row(todo)
-                        .listRowBackground(SketchTheme.Color.card)
+                        .listRowBackground(RuledRowBackground(seed: todo.id.hashValue))
                         .swipeActions(edge: .leading) {
                             if todo.status == .available {
                                 Button {
@@ -106,7 +106,8 @@ private struct TodoListContent: View {
                 Section {
                     ForEach(recentCompleted) { todo in
                         row(todo)
-                            .listRowBackground(SketchTheme.Color.card.opacity(0.7))
+                            .listRowBackground(RuledRowBackground(seed: todo.id.hashValue,
+                                                                  paperColor: SketchTheme.Color.paper.opacity(0.7)))
                             .swipeActions(edge: .trailing) {
                                 Button(role: .destructive) { delete(todo) } label: {
                                     Label("삭제", systemImage: "trash")

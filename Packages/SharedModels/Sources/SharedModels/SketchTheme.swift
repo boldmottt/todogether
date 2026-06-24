@@ -64,50 +64,54 @@ public struct SeededRNG {
     }
 }
 
-// MARK: - 굵고 울렁이는 줄노트 배경
-public struct RuledBackground: View {
-    var lineSpacing: CGFloat
+// MARK: - 행 하단에 잉크 선 하나 (행 높이에 맞춰 글자 아래 정확히 위치)
+public struct RuledRowBackground: View {
+    var seed: Int
+    var paperColor: SwiftUI.Color
 
-    public init(lineSpacing: CGFloat = 44) { self.lineSpacing = lineSpacing }
+    public init(seed: Int = 0, paperColor: SwiftUI.Color = SketchTheme.Color.paper) {
+        self.seed = seed
+        self.paperColor = paperColor
+    }
 
     public var body: some View {
-        GeometryReader { geo in
-            SketchTheme.Color.paper.ignoresSafeArea()
-            Canvas { ctx, size in
-                let count = Int(size.height / lineSpacing) + 2
-                for i in 0..<count {
-                    let baseY = CGFloat(i) * lineSpacing + 20
-                    var rng = SeededRNG(seed: i &* 137 &+ 17)
+        paperColor
+            .overlay(
+                Canvas { ctx, size in
+                    var rng = SeededRNG(seed: seed &* 137 &+ 17)
+                    let opacity = 0.22 + rng.next() * 0.10
+                    let lineWidth = 1.1 + rng.next() * 0.7
+                    // 행 하단 바로 위 — 패딩 8pt 여유
+                    let y = size.height - 8.0
 
-                    // 두께·진하기가 줄마다 미세하게 다름
-                    let opacity = 0.18 + rng.next() * 0.12
-                    let lineWidth = 1.2 + rng.next() * 0.8   // 굵고 뚜렷하게
-
-                    // 세그먼트 단위로 울렁임 (더 긴 세그먼트, 더 큰 흔들림)
-                    let segW: CGFloat = 24
+                    let segW: CGFloat = 22
                     let segs = Int(size.width / segW) + 2
                     var path = Path()
-
                     for s in 0..<segs {
                         let x0 = CGFloat(s) * segW
                         let x1 = x0 + segW
-                        let y0 = baseY + CGFloat(rng.jitter(1.5))
-                        let y1 = baseY + CGFloat(rng.jitter(1.5))
-                        let cy = baseY + CGFloat(rng.jitter(2.2))
+                        let y0 = y + CGFloat(rng.jitter(1.2))
+                        let y1 = y + CGFloat(rng.jitter(1.2))
+                        let cy = y + CGFloat(rng.jitter(1.8))
                         if s == 0 { path.move(to: CGPoint(x: x0, y: y0)) }
                         path.addQuadCurve(
                             to: CGPoint(x: x1, y: y1),
-                            control: CGPoint(x: (x0+x1)/2, y: cy)
+                            control: CGPoint(x: (x0 + x1) / 2, y: cy)
                         )
                     }
-
                     ctx.stroke(path,
                                with: .color(SketchTheme.Color.ink.opacity(opacity)),
                                style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
                 }
-            }
-        }
-        .ignoresSafeArea()
+            )
+    }
+}
+
+// MARK: - 전체 배경용 (비어있는 공간 채우기 — 선 없이 종이색만)
+public struct RuledBackground: View {
+    public init() {}
+    public var body: some View {
+        SketchTheme.Color.paper.ignoresSafeArea()
     }
 }
 
