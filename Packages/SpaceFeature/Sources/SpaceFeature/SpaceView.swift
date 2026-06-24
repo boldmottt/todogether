@@ -8,6 +8,7 @@ public struct SpaceListView: View {
     @Environment(\.modelContext) private var context
     @Query(sort: \Space.name) private var spaces: [Space]
     @State private var showCreateSheet = false
+    @State private var showJoinSheet = false
 
     public init() {}
 
@@ -22,19 +23,29 @@ public struct SpaceListView: View {
                 ContentUnavailableView {
                     Label("함께할 사람을 초대해보세요", systemImage: "person.2")
                 } description: {
-                    Text("공유방을 만들면 가족·친구와 할 일을 나눌 수 있어요")
+                    Text("공유방을 만들거나 초대 코드로 참여해보세요")
                 } actions: {
                     Button("공유방 만들기") { showCreateSheet = true }
                         .buttonStyle(.borderedProminent)
+                    Button("코드로 참여") { showJoinSheet = true }
+                        .buttonStyle(.bordered)
                 }
             }
         }
         .navigationTitle("공유방")
         .toolbar {
-            Button("추가", systemImage: "plus") { showCreateSheet = true }
+            Menu {
+                Button("새 공유방", systemImage: "plus") { showCreateSheet = true }
+                Button("코드로 참여", systemImage: "qrcode") { showJoinSheet = true }
+            } label: {
+                Image(systemName: "ellipsis.circle")
+            }
         }
         .sheet(isPresented: $showCreateSheet) {
             CreateSpaceView()
+        }
+        .sheet(isPresented: $showJoinSheet) {
+            JoinByCodeView()
         }
         .navigationDestination(for: Space.self) { space in
             SpaceDetailView(space: space)

@@ -393,6 +393,58 @@ def notif_settings():
     d.text((28 * S, y), "자정을 넘는 구간(22시~8시)도 설정할 수 있어요", font=f(11), fill=SUB)
     img.save(os.path.join(OUT, "08_notif_settings.png"))
 
+def apple_signin():
+    img, d = base()
+    # 중앙 로고
+    cy = 280 * S
+    d.text((W/2, cy), "✓", font=f(52, True), fill=BLUE, anchor="mm")
+    d.text((W/2, cy + 70 * S), "todogether", font=f(28, True), fill=INK, anchor="mm")
+    d.text((W/2, cy + 106 * S), "함께 만드는 할 일 목록", font=f(15), fill=SUB, anchor="mm")
+    # Apple 로그인 버튼
+    by = cy + 170 * S
+    rounded(d, (32 * S, by, W - 32 * S, by + 50 * S), 12 * S, fill=(20, 20, 24))
+    d.text((W/2, by + 26 * S), "🍎  Apple로 로그인", font=f(16, True), fill=(255, 255, 255), anchor="mm")
+    # 건너뛰기
+    d.text((W/2, by + 80 * S), "로그인 없이 시작", font=f(14), fill=SUB, anchor="mm")
+    # 하단 안내
+    d.text((W/2, H - 100 * S), "Apple 계정으로 로그인하면 공유방 기능과", font=f(11), fill=SUB, anchor="mm")
+    d.text((W/2, H - 80 * S), "실시간 동기화를 이용할 수 있어요.", font=f(11), fill=SUB, anchor="mm")
+    img.save(os.path.join(OUT, "12_apple_signin.png"))
+
+def invite_code():
+    img, d = base()
+    navbar(d, "우리집", left="‹")
+    y = 100 * S
+    # 이름/색상
+    rounded(d, (16 * S, y, W - 16 * S, y + 96 * S), 12 * S, fill=CARD)
+    d.text((32 * S, y + 16 * S), "공유방 이름", font=f(12), fill=SUB)
+    d.text((32 * S, y + 36 * S), "우리집", font=f(17, True), fill=INK)
+    y += 116 * S
+    # 멤버
+    d.text((28 * S, y), "멤버", font=f(12, True), fill=SUB)
+    y += 24 * S
+    rounded(d, (16 * S, y, W - 16 * S, y + 110 * S), 12 * S, fill=CARD)
+    d.text((32 * S, y + 16 * S), "나  소유자", font=f(14), fill=INK)
+    d.line([(32 * S, y + 50 * S), (W - 16 * S, y + 50 * S)], fill=LINE, width=S)
+    d.text((32 * S, y + 62 * S), "iCloud로 초대", font=f(14), fill=BLUE)
+    d.line([(32 * S, y + 96 * S), (W - 16 * S, y + 96 * S)], fill=LINE, width=S)
+    y += 130 * S
+    # 초대 코드 섹션
+    d.text((28 * S, y), "초대 코드", font=f(12, True), fill=SUB)
+    y += 24 * S
+    rounded(d, (16 * S, y, W - 16 * S, y + 120 * S), 12 * S, fill=CARD)
+    # 코드 표시 (3+3)
+    d.text((40 * S, y + 20 * S), "HJK", font=f(28, True), fill=INK)
+    d.text((108 * S, y + 20 * S), "-", font=f(24), fill=SUB)
+    d.text((126 * S, y + 20 * S), "9NP", font=f(28, True), fill=INK)
+    # 복사 아이콘
+    d.text((W - 44 * S, y + 28 * S), "⧉", font=f(20), fill=BLUE, anchor="mm")
+    d.text((32 * S, y + 70 * S), "이 코드를 멤버에게 알려주세요.", font=f(12), fill=SUB)
+    d.text((32 * S, y + 88 * S), "코드로 공유방에 바로 참여할 수 있어요.", font=f(12), fill=SUB)
+    d.line([(32 * S, y + 104 * S), (W - 16 * S, y + 104 * S)], fill=LINE, width=S)
+    d.text((32 * S, y + 108 * S), "↑ 초대 링크 공유", font=f(14), fill=BLUE)
+    img.save(os.path.join(OUT, "13_invite_code.png"))
+
 def add_todo_nlp():
     """AddTodoView — 자연어 날짜 파싱 힌트"""
     img, d = base()
@@ -491,5 +543,6 @@ if __name__ == "__main__":
     todo_list(); todo_detail(); calendar(); widget()
     onboarding(); space_detail(); reaction(); notif_settings()
     settings(); todo_list_claiming(); add_todo_nlp()
+    apple_signin(); invite_code()
     print("emoji_color:", _emoji_ok)
     print("rendered:", sorted(os.listdir(OUT)))

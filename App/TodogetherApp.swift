@@ -10,25 +10,29 @@ import WidgetFeature
 
 @main
 struct TodogetherApp: App {
-    @State private var currentUser: CurrentUser = .local
     @State private var deepLinkedTodoID: UUID?
     @Environment(\.scenePhase) private var scenePhase
 
     @AppStorage("didOnboard") private var didOnboard = false
+    @AppStorage("didDismissSignIn") private var didDismissSignIn = false
     @AppStorage("appLockEnabled") private var appLockEnabled = false
     @StateObject private var lock: AppLockController
+    @StateObject private var signIn: AppleSignInController
 
     let container: ModelContainer = try! ModelContainer.makeShared()
 
     init() {
         let enabled = UserDefaults.standard.bool(forKey: "appLockEnabled")
         _lock = StateObject(wrappedValue: AppLockController(lockEnabled: enabled))
+        _signIn = StateObject(wrappedValue: AppleSignInController())
     }
+
+    private var currentUser: CurrentUser { signIn.currentUser }
 
     var body: some Scene {
         WindowGroup {
             ZStack {
-                ContentView(deepLinkedTodoID: $deepLinkedTodoID)
+                ContentView(deepLinkedTodoID: $deepLinkedTodoID, signIn: signIn)
                     .currentUser(currentUser)
                     .task {
                         NotificationManager.shared.registerCategories()
@@ -48,6 +52,15 @@ struct TodogetherApp: App {
                 if !didOnboard {
                     OnboardingView { didOnboard = true }
                         .background(.background)
+                }
+
+                // Apple 로그인 — 온보딩 완료 후, 미로그인 + 아직 건너뛰지 않은 경우
+                if didOnboard && !signIn.isSignedIn && !didDismissSignIn {
+                    AppleSignInView(controller: signIn) {
+                        didDismissSignIn = true  // "로그인 없이 시작" → 다시 묻지 않음
+                    }
+                    .background(.background)
+                    .transition(.opacity)
                 }
             }
             // 콜드 스타트 시 1회 인증 (앱은 이미 active로 시작 → onChange 미발생 대비)
@@ -74,6 +87,7 @@ struct TodogetherApp: App {
 
 struct ContentView: View {
     @Binding var deepLinkedTodoID: UUID?
+    @ObservedObject var signIn: AppleSignInController
 
     var body: some View {
         TabView {
@@ -104,7 +118,7 @@ struct ContentView: View {
             .tabItem { Label("템플릿", systemImage: "square.on.square") }
 
             NavigationStack {
-                SettingsView()
+                SettingsView(signIn: signIn)
             }
             .tabItem { Label("설정", systemImage: "gear") }
         }

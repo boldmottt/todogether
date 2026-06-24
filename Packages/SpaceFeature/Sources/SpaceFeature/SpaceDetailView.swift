@@ -36,9 +36,12 @@ public struct SpaceDetailView: View {
                 Button {
                     Task { await startSharing() }
                 } label: {
-                    Label(share == nil ? "사람 초대하기" : "초대 관리", systemImage: "person.badge.plus")
+                    Label(share == nil ? "iCloud로 초대" : "초대 관리", systemImage: "person.badge.plus")
                 }
             }
+
+            // 초대 코드 섹션 (코드 생성 + 공유)
+            InviteCodeSection(space: space)
 
             // 위험 구역
             Section {
