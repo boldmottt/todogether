@@ -93,7 +93,7 @@ struct DayCell: View {
     var body: some View {
         VStack(spacing: 4) {
             Text(date.formatted(.dateTime.weekday(.narrow)))
-                .font(.caption2)
+                .font(SketchTheme.caption)
                 .foregroundStyle(.secondary)
             Text(date.formatted(.dateTime.day()))
                 .font(.subheadline.weight(isToday ? .bold : .regular))
@@ -138,7 +138,7 @@ struct MonthCalendarView: View {
                 Button { shiftMonth(-1) } label: { Image(systemName: "chevron.left") }
                 Spacer()
                 Text(monthAnchor.formatted(.dateTime.year().month()))
-                    .font(.headline)
+                    .font(SketchTheme.headline)
                 Spacer()
                 Button { shiftMonth(1) } label: { Image(systemName: "chevron.right") }
             }
@@ -148,7 +148,7 @@ struct MonthCalendarView: View {
             HStack(spacing: 0) {
                 ForEach(weekdaySymbols, id: \.self) { sym in
                     Text(sym)
-                        .font(.caption2)
+                        .font(SketchTheme.caption)
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity)
                 }

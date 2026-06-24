@@ -65,7 +65,7 @@ struct SpaceRowView: View {
             Text(space.name)
             Spacer()
             Text("\(space.todos.filter { !$0.isCompleted }.count)")
-                .font(.caption)
+                .font(SketchTheme.caption)
                 .foregroundStyle(.secondary)
         }
     }

@@ -310,6 +310,15 @@ public struct HighlightUnderline: ViewModifier {
     }
 }
 
+// MARK: - 전역 폰트 환경 주입
+// .font(.body), .font(.headline) 등 시스템 스케일도 Noteworthy로 통일
+public struct SketchFontEnvironment: ViewModifier {
+    public func body(content: Content) -> some View {
+        content
+            .environment(\.font, SketchTheme.body)
+    }
+}
+
 // MARK: - View extensions
 public extension View {
     func sketchCard(tilt: Double = 0, seed: Int = 0) -> some View {
@@ -317,5 +326,9 @@ public extension View {
     }
     func highlightUnderline() -> some View {
         modifier(HighlightUnderline())
+    }
+    /// 앱 루트에 한 번 적용 — 모든 .font(.body/.caption 등)을 Noteworthy로 교체
+    func sketchFontEnvironment() -> some View {
+        modifier(SketchFontEnvironment())
     }
 }

@@ -23,7 +23,7 @@ public struct TodoDetailView: View {
         Form {
             Section {
                 TextField("할 일", text: $todo.title, axis: .vertical)
-                    .font(.headline)
+                    .font(SketchTheme.headline)
                 TextField("메모", text: notesBinding, axis: .vertical)
                     .lineLimit(1...5)
                     .foregroundStyle(.secondary)

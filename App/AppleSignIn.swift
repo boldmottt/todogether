@@ -96,9 +96,9 @@ struct AppleSignInView: View {
                     .font(.system(size: 64))
                     .foregroundStyle(.blue)
                 Text("todogether")
-                    .font(.largeTitle.bold())
+                    .font(SketchTheme.title)
                 Text("함께 만드는 할 일 목록")
-                    .font(.subheadline)
+                    .font(SketchTheme.body)
                     .foregroundStyle(.secondary)
             }
 
@@ -122,7 +122,7 @@ struct AppleSignInView: View {
                 Button("로그인 없이 시작") {
                     onSkip()
                 }
-                .font(.subheadline)
+                .font(SketchTheme.body)
                 .foregroundStyle(.secondary)
             }
             .padding(.horizontal, 32)
@@ -130,7 +130,7 @@ struct AppleSignInView: View {
             Spacer()
 
             Text("Apple 계정으로 로그인하면 공유방 기능과\n실시간 동기화를 이용할 수 있어요.")
-                .font(.caption)
+                .font(SketchTheme.caption)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
                 .padding(.bottom, 32)

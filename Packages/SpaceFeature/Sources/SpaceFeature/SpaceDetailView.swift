@@ -139,13 +139,13 @@ struct MemberRow: View {
             VStack(alignment: .leading, spacing: 1) {
                 Text(participant.name)
                 Text(participant.role)
-                    .font(.caption)
+                    .font(SketchTheme.caption)
                     .foregroundStyle(.secondary)
             }
             Spacer()
             if participant.isPending {
                 Text("대기 중")
-                    .font(.caption2)
+                    .font(SketchTheme.caption)
                     .padding(.horizontal, 6).padding(.vertical, 2)
                     .background(.yellow.opacity(0.25), in: Capsule())
             }
@@ -167,7 +167,7 @@ struct ColorPickerRow: View {
                     .overlay {
                         if colorHex == hex {
                             Image(systemName: "checkmark")
-                                .font(.caption.bold())
+                                .font(SketchTheme.caption)
                                 .foregroundStyle(.white)
                         }
                     }

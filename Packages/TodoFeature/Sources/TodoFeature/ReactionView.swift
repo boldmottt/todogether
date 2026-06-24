@@ -80,7 +80,7 @@ private struct EmojiButton: View {
     var body: some View {
         Button(action: action) {
             Text(emoji)
-                .font(.title2)
+                .font(SketchTheme.headline)
                 .frame(width: 44, height: 44)
                 .background(
                     isSelected ? Color.blue.opacity(0.15) : Color.clear,
@@ -153,7 +153,7 @@ private struct ReactionBubble: View {
         } label: {
             HStack(spacing: 3) {
                 Text(emoji)
-                    .font(.caption)
+                    .font(SketchTheme.caption)
                 if count > 1 {
                     Text("\(count)")
                         .font(.caption2.weight(.medium))
@@ -173,7 +173,7 @@ private struct ReactionBubble: View {
             VStack(alignment: .leading, spacing: 4) {
                 ForEach(names, id: \.self) { name in
                     Text(name)
-                        .font(.subheadline)
+                        .font(SketchTheme.body)
                 }
             }
             .padding(12)

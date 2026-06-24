@@ -407,7 +407,7 @@ struct AddTodoView: View {
                             "날짜 인식: \(hint.formatted(.dateTime.month().day().weekday()))",
                             systemImage: "sparkles"
                         )
-                        .font(.caption)
+                        .font(SketchTheme.caption)
                         .foregroundStyle(.blue)
                     }
                 }

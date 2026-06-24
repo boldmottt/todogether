@@ -55,7 +55,7 @@ struct TemplateRowView: View {
         VStack(alignment: .leading, spacing: 2) {
             Text(template.name)
             Text("\(template.items.count)개 항목")
-                .font(.caption)
+                .font(SketchTheme.caption)
                 .foregroundStyle(.secondary)
         }
     }
@@ -173,7 +173,7 @@ struct TemplateItemRow: View {
                     Label(items[prereq].title, systemImage: "link")
                 }
             }
-            .font(.caption)
+            .font(SketchTheme.caption)
             .foregroundStyle(.secondary)
         }
     }
@@ -354,7 +354,7 @@ struct InstantiationSheet: View {
 
                 Section {
                     Text("\(template.items.count)개 항목이 생성됩니다")
-                        .font(.caption)
+                        .font(SketchTheme.caption)
                         .foregroundStyle(.secondary)
                 }
             }

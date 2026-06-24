@@ -86,7 +86,7 @@ public struct InviteCodeSection: View {
                 }
 
                 Text("이 코드를 멤버에게 알려주세요. 코드로 공유방에 바로 참여할 수 있어요.")
-                    .font(.caption)
+                    .font(SketchTheme.caption)
                     .foregroundStyle(.secondary)
             }
             .padding(.vertical, 4)

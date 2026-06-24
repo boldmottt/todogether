@@ -65,6 +65,8 @@ struct TodogetherApp: App {
             }
             // 콜드 스타트 시 1회 인증 (앱은 이미 active로 시작 → onChange 미발생 대비)
             .task { await lock.authenticate() }
+            // 모든 시스템 .font() 스케일을 Noteworthy로 교체
+            .sketchFontEnvironment()
         }
         .modelContainer(container)
         .onChange(of: scenePhase) { _, phase in

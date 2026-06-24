@@ -57,7 +57,7 @@ struct LockScreenView: View {
             Rectangle().fill(.ultraThickMaterial).ignoresSafeArea()
             VStack(spacing: 16) {
                 Image(systemName: "lock.fill").font(.system(size: 48))
-                Text("todogether 잠김").font(.headline)
+                Text("todogether 잠김").font(SketchTheme.headline)
                 Button("잠금 해제", action: onUnlock)
                     .buttonStyle(.borderedProminent)
             }

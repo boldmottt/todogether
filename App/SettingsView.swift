@@ -20,13 +20,13 @@ public struct SettingsView: View {
                 if signIn.isSignedIn {
                     HStack {
                         Image(systemName: "person.crop.circle.fill")
-                            .font(.title2)
+                            .font(SketchTheme.headline)
                             .foregroundStyle(.blue)
                         VStack(alignment: .leading, spacing: 2) {
                             Text(signIn.currentUser.name)
-                                .font(.headline)
+                                .font(SketchTheme.headline)
                             Text("Apple 계정으로 로그인됨")
-                                .font(.caption)
+                                .font(SketchTheme.caption)
                                 .foregroundStyle(.secondary)
                         }
                     }
@@ -58,7 +58,7 @@ public struct SettingsView: View {
             Section("보안") {
                 Toggle("Face ID / Touch ID 잠금", isOn: $appLockEnabled)
                 Text("앱 실행 및 백그라운드 복귀 시 생체 인증이 필요합니다.")
-                    .font(.caption)
+                    .font(SketchTheme.caption)
                     .foregroundStyle(.secondary)
             }
 
