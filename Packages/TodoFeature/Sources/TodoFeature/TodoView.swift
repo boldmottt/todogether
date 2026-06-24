@@ -338,16 +338,58 @@ struct AddTodoView: View {
     @State private var title = ""
     @State private var dueDate: Date?
     @State private var hasDueDate = false
+    @State private var parsedDateHint: Date?   // 자연어 파싱 결과 미리보기
+    @State private var dateSetByParser = false // 파서가 자동 세팅했는지 추적
 
     var body: some View {
         NavigationStack {
             Form {
-                TextField("할 일", text: $title)
-                Toggle("날짜 지정", isOn: $hasDueDate)
+                Section {
+                    TextField("할 일 (예: 내일 장보기)", text: $title)
+                        .onChange(of: title) { _, newValue in
+                            if let result = NaturalDateParser.parse(from: newValue) {
+                                parsedDateHint = result.date
+                                if !hasDueDate {
+                                    dueDate = result.date
+                                    hasDueDate = true
+                                    dateSetByParser = true
+                                }
+                            } else {
+                                parsedDateHint = nil
+                                // 파서가 자동으로 켠 날짜 토글은 파서가 힌트를 잃으면 되돌림
+                                if dateSetByParser {
+                                    hasDueDate = false
+                                    dueDate = nil
+                                    dateSetByParser = false
+                                }
+                            }
+                        }
+                    // 자연어 파싱 힌트 표시 (파서가 설정한 상태일 때만)
+                    if let hint = parsedDateHint, dateSetByParser {
+                        Label(
+                            "날짜 인식: \(hint.formatted(.dateTime.month().day().weekday()))",
+                            systemImage: "sparkles"
+                        )
+                        .font(.caption)
+                        .foregroundStyle(.blue)
+                    }
+                }
+
+                Toggle("날짜 지정", isOn: Binding(
+                    get: { hasDueDate },
+                    set: { newVal in
+                        hasDueDate = newVal
+                        // 사용자가 직접 토글 끄면 파서 힌트도 해제
+                        if !newVal {
+                            parsedDateHint = nil
+                            dateSetByParser = false
+                        }
+                    }
+                ))
                 if hasDueDate {
                     DatePicker("날짜", selection: Binding(
                         get: { dueDate ?? Date() },
-                        set: { dueDate = $0 }
+                        set: { dueDate = $0; dateSetByParser = false }
                     ), displayedComponents: .date)
                 }
             }

@@ -393,6 +393,31 @@ def notif_settings():
     d.text((28 * S, y), "자정을 넘는 구간(22시~8시)도 설정할 수 있어요", font=f(11), fill=SUB)
     img.save(os.path.join(OUT, "08_notif_settings.png"))
 
+def add_todo_nlp():
+    """AddTodoView — 자연어 날짜 파싱 힌트"""
+    img, d = base()
+    navbar(d, "새 할 일", left="취소", right_icons=["추가"])
+    y = 100 * S
+    # 입력 섹션 카드
+    rounded(d, (16 * S, y, W - 16 * S, y + 100 * S), 12 * S, fill=CARD)
+    d.text((32 * S, y + 16 * S), "할 일 (예: 내일 장보기)", font=f(14), fill=SUB)
+    d.line([(32 * S, y + 44 * S), (W - 32 * S, y + 44 * S)], fill=LINE, width=S)
+    d.text((32 * S, y + 52 * S), "다음주 월요일 팀 미팅", font=f(16), fill=INK)
+    # 파싱 힌트
+    d.text((32 * S, y + 76 * S), "✦ 날짜 인식: 6월 30일 월요일", font=f(12), fill=BLUE)
+    y += 116 * S
+    # 날짜 지정 토글 (자동 ON)
+    rounded(d, (16 * S, y, W - 16 * S, y + 50 * S), 12 * S, fill=CARD)
+    d.text((32 * S, y + 16 * S), "날짜 지정", font=f(14), fill=INK)
+    rounded(d, (W - 76 * S, y + 12 * S, W - 32 * S, y + 36 * S), 12 * S, fill=GREEN)
+    d.ellipse((W - 54 * S, y + 14 * S, W - 34 * S, y + 34 * S), fill=(255, 255, 255))
+    y += 54 * S
+    # DatePicker
+    rounded(d, (16 * S, y, W - 16 * S, y + 50 * S), 12 * S, fill=CARD)
+    d.text((32 * S, y + 16 * S), "날짜", font=f(14), fill=INK)
+    d.text((W - 32 * S, y + 16 * S), "2026년 6월 30일", font=f(14), fill=BLUE, anchor="rm")
+    img.save(os.path.join(OUT, "11_add_todo_nlp.png"))
+
 def settings():
     img, d = base()
     navbar(d, "설정")
@@ -465,6 +490,6 @@ def todo_list_claiming():
 if __name__ == "__main__":
     todo_list(); todo_detail(); calendar(); widget()
     onboarding(); space_detail(); reaction(); notif_settings()
-    settings(); todo_list_claiming()
+    settings(); todo_list_claiming(); add_todo_nlp()
     print("emoji_color:", _emoji_ok)
     print("rendered:", sorted(os.listdir(OUT)))
