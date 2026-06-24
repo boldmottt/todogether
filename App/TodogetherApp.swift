@@ -92,20 +92,22 @@ struct ContentView: View {
     init(deepLinkedTodoID: Binding<UUID?>, signIn: AppleSignInController) {
         _deepLinkedTodoID = deepLinkedTodoID
         self.signIn = signIn
-        // 탭바 + 네비게이션바를 크림색으로 통일
-        let paper = UIColor(red: 0.996, green: 0.980, blue: 0.878, alpha: 1)  // #FEFAE0
-        let inkColor = UIColor(red: 0.176, green: 0.165, blue: 0.133, alpha: 1)  // #2D2A22
+        // 탭바 + 네비게이션바를 흰 종이 + 검정 잉크 스타일로
+        let paper    = UIColor(red: 0.969, green: 0.969, blue: 0.961, alpha: 1)  // #F7F7F5
+        let inkColor = UIColor(red: 0.102, green: 0.102, blue: 0.094, alpha: 1)  // #1A1A18
+        let divider  = UIColor(red: 0.800, green: 0.800, blue: 0.800, alpha: 1)
 
         let tabBarAppearance = UITabBarAppearance()
         tabBarAppearance.configureWithOpaqueBackground()
         tabBarAppearance.backgroundColor = paper
         UITabBar.appearance().standardAppearance = tabBarAppearance
         UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
+        UITabBar.appearance().tintColor = inkColor
 
         let navAppearance = UINavigationBarAppearance()
         navAppearance.configureWithOpaqueBackground()
         navAppearance.backgroundColor = paper
-        navAppearance.shadowColor = UIColor(red: 0.769, green: 0.722, blue: 0.627, alpha: 0.5)
+        navAppearance.shadowColor = divider
         navAppearance.titleTextAttributes = [
             .font: UIFont(name: "Noteworthy-Bold", size: 17) ?? UIFont.boldSystemFont(ofSize: 17),
             .foregroundColor: inkColor
@@ -117,6 +119,7 @@ struct ContentView: View {
         UINavigationBar.appearance().standardAppearance = navAppearance
         UINavigationBar.appearance().scrollEdgeAppearance = navAppearance
         UINavigationBar.appearance().compactAppearance = navAppearance
+        UINavigationBar.appearance().tintColor = inkColor
     }
 
     var body: some View {

@@ -1,20 +1,33 @@
 import SwiftUI
 
-// MARK: - 손글씨 메모장 디자인 시스템
+// MARK: - 손그림 노트패드 디자인 시스템
+// 흰 종이 + 굵고 삐뚤한 검정 잉크 펜 스타일
 public enum SketchTheme {
 
-    // MARK: - Colors
+    // MARK: - Colors (거의 흑백, 잉크 온 화이트)
     public enum Color {
-        public static let paper       = SwiftUI.Color(hex: "#FEFAE0")
-        public static let card        = SwiftUI.Color(hex: "#FFFDF5")
-        public static let ink         = SwiftUI.Color(hex: "#2D2A22")
-        public static let softInk     = SwiftUI.Color(hex: "#8C7B6B")
-        public static let ruleLine    = SwiftUI.Color(hex: "#C4B8A0")
-        public static let accent      = SwiftUI.Color(hex: "#E07A5F")
-        public static let sage        = SwiftUI.Color(hex: "#81B29A")
-        public static let sand        = SwiftUI.Color(hex: "#C4A882")
-        public static let highlight   = SwiftUI.Color(hex: "#FFE87C").opacity(0.55)
-        public static let warm_red    = SwiftUI.Color(hex: "#C0392B")
+        /// 종이 흰색
+        public static let paper       = SwiftUI.Color(hex: "#F7F7F5")
+        /// 카드/셀
+        public static let card        = SwiftUI.Color(hex: "#FFFFFF")
+        /// 잉크 블랙 (순수 검정보다 살짝 따뜻하게)
+        public static let ink         = SwiftUI.Color(hex: "#1A1A18")
+        /// 연한 잉크 (부제목, 힌트)
+        public static let softInk     = SwiftUI.Color(hex: "#555550")
+        /// 더 연한 잉크 (완료된 항목)
+        public static let fadedInk    = SwiftUI.Color(hex: "#AAAAAA")
+        /// 줄선
+        public static let ruleLine    = SwiftUI.Color(hex: "#CCCCCC")
+        /// 강조 — 거의 안 쓰는 진한 포인트 (날짜 초과 등)
+        public static let accent      = SwiftUI.Color(hex: "#1A1A18")
+        /// 완료 체크 — 잉크와 동일하게
+        public static let sage        = SwiftUI.Color(hex: "#1A1A18")
+        /// 잠금
+        public static let sand        = SwiftUI.Color(hex: "#AAAAAA")
+        /// 형광펜 (노란 하이라이트)
+        public static let highlight   = SwiftUI.Color(hex: "#FFE066").opacity(0.6)
+        /// 위험/삭제
+        public static let warm_red    = SwiftUI.Color(hex: "#1A1A18")
     }
 
     // MARK: - Fonts
@@ -32,32 +45,30 @@ public enum SketchTheme {
     public static var nano:     SwiftUI.Font { font(10) }
 }
 
-// MARK: - 결정적 난수 (LCG) — 씨앗이 같으면 항상 같은 수열 반환
+// MARK: - 결정적 난수 (LCG)
 public struct SeededRNG {
     private var state: UInt64
 
     public init(seed: Int) {
         state = UInt64(bitPattern: Int64(seed &* 2654435761))
-        // warm-up
         _ = next(); _ = next()
     }
 
     public mutating func next() -> Double {
         state = state &* 6364136223846793005 &+ 1442695040888963407
-        return Double(state >> 33) / Double(1 << 31)   // [0, 1)
+        return Double(state >> 33) / Double(1 << 31)
     }
 
-    /// [-range, +range]
     public mutating func jitter(_ range: Double) -> Double {
         (next() * 2 - 1) * range
     }
 }
 
-// MARK: - 손으로 그린 줄노트 배경
+// MARK: - 굵고 울렁이는 줄노트 배경
 public struct RuledBackground: View {
     var lineSpacing: CGFloat
 
-    public init(lineSpacing: CGFloat = 36) { self.lineSpacing = lineSpacing }
+    public init(lineSpacing: CGFloat = 44) { self.lineSpacing = lineSpacing }
 
     public var body: some View {
         GeometryReader { geo in
@@ -65,41 +76,34 @@ public struct RuledBackground: View {
             Canvas { ctx, size in
                 let count = Int(size.height / lineSpacing) + 2
                 for i in 0..<count {
-                    let baseY = CGFloat(i) * lineSpacing + 14
+                    let baseY = CGFloat(i) * lineSpacing + 20
                     var rng = SeededRNG(seed: i &* 137 &+ 17)
 
-                    // 잉크 압력 변화 → 선마다 미세하게 다른 두께·불투명도
-                    let opacity = 0.28 + rng.next() * 0.18
-                    let lineWidth = 0.6 + rng.next() * 0.5
+                    // 두께·진하기가 줄마다 미세하게 다름
+                    let opacity = 0.18 + rng.next() * 0.12
+                    let lineWidth = 1.2 + rng.next() * 0.8   // 굵고 뚜렷하게
 
-                    // 선을 짧은 세그먼트로 나눠 각각 살짝 흔들기
-                    let segmentWidth: CGFloat = 18
-                    let segments = Int(size.width / segmentWidth) + 2
+                    // 세그먼트 단위로 울렁임 (더 긴 세그먼트, 더 큰 흔들림)
+                    let segW: CGFloat = 24
+                    let segs = Int(size.width / segW) + 2
                     var path = Path()
 
-                    for s in 0..<segments {
-                        let x0 = CGFloat(s) * segmentWidth
-                        let x1 = x0 + segmentWidth
-                        // 각 세그먼트 끝점에 미세한 Y 편차
-                        let y0 = baseY + CGFloat(rng.jitter(0.9))
-                        let y1 = baseY + CGFloat(rng.jitter(0.9))
-                        // 제어점 — 살짝 굽어진 곡선
-                        let cy = baseY + CGFloat(rng.jitter(1.4))
-
-                        if s == 0 {
-                            path.move(to: CGPoint(x: x0, y: y0))
-                        }
+                    for s in 0..<segs {
+                        let x0 = CGFloat(s) * segW
+                        let x1 = x0 + segW
+                        let y0 = baseY + CGFloat(rng.jitter(1.5))
+                        let y1 = baseY + CGFloat(rng.jitter(1.5))
+                        let cy = baseY + CGFloat(rng.jitter(2.2))
+                        if s == 0 { path.move(to: CGPoint(x: x0, y: y0)) }
                         path.addQuadCurve(
                             to: CGPoint(x: x1, y: y1),
-                            control: CGPoint(x: (x0 + x1) / 2, y: cy)
+                            control: CGPoint(x: (x0+x1)/2, y: cy)
                         )
                     }
 
-                    ctx.stroke(
-                        path,
-                        with: .color(SketchTheme.Color.ruleLine.opacity(opacity)),
-                        style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
-                    )
+                    ctx.stroke(path,
+                               with: .color(SketchTheme.Color.ink.opacity(opacity)),
+                               style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
                 }
             }
         }
@@ -107,11 +111,11 @@ public struct RuledBackground: View {
     }
 }
 
-// MARK: - 손으로 그린 체크박스 (씨앗 기반 변형)
+// MARK: - 손그림 사각형 체크박스 (네모 스타일)
 public struct SketchCheckboxStyle: ToggleStyle {
     var completed: Bool
     var locked: Bool
-    var seed: Int   // todo.id.hashValue → 항상 같은 모양
+    var seed: Int
 
     public init(completed: Bool = false, locked: Bool = false, seed: Int = 0) {
         self.completed = completed
@@ -124,16 +128,24 @@ public struct SketchCheckboxStyle: ToggleStyle {
             if !locked { configuration.isOn.toggle() }
         } label: {
             ZStack {
-                WobblyCircle(seed: seed, completed: completed, locked: locked)
-                    .frame(width: 24, height: 24)
+                WobblySquare(seed: seed, completed: completed, locked: locked)
+                    .frame(width: 22, height: 22)
 
                 if completed {
                     CheckmarkShape(seed: seed)
-                        .frame(width: 24, height: 24)
+                        .frame(width: 22, height: 22)
                 } else if locked {
-                    Image(systemName: "lock.fill")
-                        .font(.system(size: 10))
-                        .foregroundStyle(SketchTheme.Color.sand)
+                    // 잠금: 작은 X 표시
+                    Canvas { ctx, size in
+                        var p = Path()
+                        let m: CGFloat = size.width * 0.28
+                        p.move(to:    CGPoint(x: m,           y: m))
+                        p.addLine(to: CGPoint(x: size.width-m, y: size.height-m))
+                        p.move(to:    CGPoint(x: size.width-m, y: m))
+                        p.addLine(to: CGPoint(x: m,            y: size.height-m))
+                        ctx.stroke(p, with: .color(SketchTheme.Color.fadedInk),
+                                   style: StrokeStyle(lineWidth: 1.8, lineCap: .round))
+                    }
                 }
             }
         }
@@ -141,8 +153,8 @@ public struct SketchCheckboxStyle: ToggleStyle {
     }
 }
 
-// MARK: - 씨앗으로 변형된 삐뚤빼뚤한 원
-private struct WobblyCircle: View {
+// MARK: - 삐뚤빼뚤한 사각형
+private struct WobblySquare: View {
     let seed: Int
     let completed: Bool
     let locked: Bool
@@ -150,86 +162,86 @@ private struct WobblyCircle: View {
     var body: some View {
         Canvas { ctx, size in
             var rng = SeededRNG(seed: seed)
-            let cx = size.width / 2
-            let cy = size.height / 2
-            let r: CGFloat = size.width / 2 - 1.5
+            let inset: CGFloat = 1.5
+            let j = { CGFloat(rng.jitter(1.2)) }
 
-            // 씨앗에 따라 꼭짓점 수(7~10)와 흔들림 크기가 달라짐
-            let points = 7 + Int(rng.next() * 4)
-            let wobbleMag = 0.8 + rng.next() * 1.0
+            // 4 꼭짓점에 살짝 흔들림
+            let tl = CGPoint(x: inset + j(), y: inset + j())
+            let tr = CGPoint(x: size.width - inset + j(), y: inset + j())
+            let br = CGPoint(x: size.width - inset + j(), y: size.height - inset + j())
+            let bl = CGPoint(x: inset + j(), y: size.height - inset + j())
+
+            // 각 변을 중간에 한 번 꺾어서 파형 느낌
+            func midWobble(_ a: CGPoint, _ b: CGPoint) -> CGPoint {
+                let mx = (a.x + b.x) / 2 + CGFloat(rng.jitter(1.0))
+                let my = (a.y + b.y) / 2 + CGFloat(rng.jitter(1.0))
+                return CGPoint(x: mx, y: my)
+            }
 
             var path = Path()
-            for idx in 0..<points {
-                let angle = CGFloat(idx) / CGFloat(points) * 2 * .pi
-                let dx = CGFloat(rng.jitter(wobbleMag))
-                let dy = CGFloat(rng.jitter(wobbleMag))
-                let px = cx + (r + dx) * cos(angle)
-                let py = cy + (r + dy) * sin(angle)
-                if idx == 0 { path.move(to: CGPoint(x: px, y: py)) }
-                else { path.addLine(to: CGPoint(x: px, y: py)) }
-            }
+            path.move(to: tl)
+            path.addLine(to: midWobble(tl, tr))
+            path.addLine(to: tr)
+            path.addLine(to: midWobble(tr, br))
+            path.addLine(to: br)
+            path.addLine(to: midWobble(br, bl))
+            path.addLine(to: bl)
+            path.addLine(to: midWobble(bl, tl))
             path.closeSubpath()
 
-            let strokeColor: SwiftUI.Color = locked ? SketchTheme.Color.sand
-                : completed ? SketchTheme.Color.sage
-                : SketchTheme.Color.softInk
-
-            // 잉크 두께도 씨앗마다 미세하게 다름
-            let lw = 1.6 + CGFloat(rng.next() * 0.6)
-            ctx.stroke(path, with: .color(strokeColor),
+            let col = locked ? SketchTheme.Color.fadedInk
+                : completed ? SketchTheme.Color.ink
+                : SketchTheme.Color.ink
+            let lw = 1.8 + CGFloat(rng.next() * 0.5)
+            ctx.stroke(path, with: .color(col),
                        style: StrokeStyle(lineWidth: lw, lineCap: .round, lineJoin: .round))
+
             if completed {
-                ctx.fill(path, with: .color(SketchTheme.Color.sage.opacity(0.14)))
+                ctx.fill(path, with: .color(SketchTheme.Color.ink.opacity(0.06)))
             }
         }
     }
 }
 
-// MARK: - 씨앗으로 변형된 체크 모양 (4가지 스타일)
+// MARK: - 씨앗별 체크 모양 (4종)
 private struct CheckmarkShape: View {
     let seed: Int
 
     var body: some View {
         Canvas { ctx, size in
             var rng = SeededRNG(seed: seed &+ 9999)
-            let style = Int(rng.next() * 4)  // 0~3 → 4가지 체크 스타일
-
-            let w = size.width
-            let h = size.height
-            let j = { CGFloat(rng.jitter(1.6)) }
+            let style = Int(rng.next() * 4)
+            let w = size.width, h = size.height
+            let j = { CGFloat(rng.jitter(1.4)) }
 
             var path = Path()
             switch style {
             case 0:
-                // 클래식 체크 ✓ (살짝 흔들림)
-                path.move(to:    CGPoint(x: w*0.20 + j(), y: h*0.52 + j()))
-                path.addLine(to: CGPoint(x: w*0.42 + j(), y: h*0.73 + j()))
-                path.addLine(to: CGPoint(x: w*0.80 + j(), y: h*0.28 + j()))
+                path.move(to:    CGPoint(x: w*0.18+j(), y: h*0.52+j()))
+                path.addLine(to: CGPoint(x: w*0.42+j(), y: h*0.74+j()))
+                path.addLine(to: CGPoint(x: w*0.82+j(), y: h*0.26+j()))
             case 1:
-                // 짧고 통통한 체크 — 중간점 살짝 올라감
-                path.move(to:    CGPoint(x: w*0.18 + j(), y: h*0.55 + j()))
-                path.addLine(to: CGPoint(x: w*0.40 + j(), y: h*0.70 + j()))
-                path.addLine(to: CGPoint(x: w*0.82 + j(), y: h*0.25 + j()))
+                path.move(to:    CGPoint(x: w*0.16+j(), y: h*0.55+j()))
+                path.addLine(to: CGPoint(x: w*0.40+j(), y: h*0.72+j()))
+                path.addLine(to: CGPoint(x: w*0.84+j(), y: h*0.24+j()))
             case 2:
-                // 넓게 퍼진 체크 — 꼬리가 길다
-                path.move(to:    CGPoint(x: w*0.15 + j(), y: h*0.48 + j()))
-                path.addLine(to: CGPoint(x: w*0.38 + j(), y: h*0.72 + j()))
-                path.addLine(to: CGPoint(x: w*0.85 + j(), y: h*0.22 + j()))
+                path.move(to:    CGPoint(x: w*0.20+j(), y: h*0.48+j()))
+                path.addLine(to: CGPoint(x: w*0.38+j(), y: h*0.70+j()))
+                path.addLine(to: CGPoint(x: w*0.80+j(), y: h*0.22+j()))
             default:
-                // 꺾인 각도가 예리한 체크
-                path.move(to:    CGPoint(x: w*0.22 + j(), y: h*0.50 + j()))
-                path.addLine(to: CGPoint(x: w*0.40 + j(), y: h*0.68 + j()))
-                path.addLine(to: CGPoint(x: w*0.78 + j(), y: h*0.30 + j()))
+                path.move(to:    CGPoint(x: w*0.22+j(), y: h*0.50+j()))
+                path.addLine(to: CGPoint(x: w*0.42+j(), y: h*0.68+j()))
+                path.addLine(to: CGPoint(x: w*0.80+j(), y: h*0.28+j()))
             }
 
-            let lw = 2.0 + CGFloat(rng.next() * 0.5)
-            ctx.stroke(path, with: .color(SketchTheme.Color.sage),
+            let lw = 2.2 + CGFloat(rng.next() * 0.4)
+            ctx.stroke(path, with: .color(SketchTheme.Color.ink),
                        style: StrokeStyle(lineWidth: lw, lineCap: .round, lineJoin: .round))
         }
     }
 }
 
-// MARK: - 손으로 그린 테두리 카드
+// MARK: - 손그림 카드 테두리 (굵은 사각형)
 public struct SketchCard: ViewModifier {
     var angle: Double
     var seed: Int
@@ -243,76 +255,48 @@ public struct SketchCard: ViewModifier {
         content
             .background(
                 ZStack {
-                    RoundedRectangle(cornerRadius: 12)
+                    RoundedRectangle(cornerRadius: 4)
                         .fill(SketchTheme.Color.card)
-                        .shadow(color: SketchTheme.Color.ink.opacity(0.09), radius: 3, x: 1, y: 2)
-                    WobblyBorder(seed: seed)
+                    WobblyCardBorder(seed: seed)
                 }
             )
             .rotationEffect(.degrees(angle))
     }
 }
 
-// MARK: - 손으로 그린 카드 테두리
-private struct WobblyBorder: View {
+private struct WobblyCardBorder: View {
     let seed: Int
 
     var body: some View {
         Canvas { ctx, size in
             var rng = SeededRNG(seed: seed &+ 42)
-            let cr: CGFloat = 12
-            let inset: CGFloat = 1
-            let pts = buildRoundedRectPoints(size: size, cornerRadius: cr, inset: inset, segments: 40)
+            let inset: CGFloat = 1.0
+            let j = { CGFloat(rng.jitter(1.0)) }
+
+            let tl = CGPoint(x: inset+j(), y: inset+j())
+            let tr = CGPoint(x: size.width-inset+j(), y: inset+j())
+            let br = CGPoint(x: size.width-inset+j(), y: size.height-inset+j())
+            let bl = CGPoint(x: inset+j(), y: size.height-inset+j())
 
             var path = Path()
-            for (i, pt) in pts.enumerated() {
-                let dx = CGFloat(rng.jitter(0.7))
-                let dy = CGFloat(rng.jitter(0.7))
-                let wpt = CGPoint(x: pt.x + dx, y: pt.y + dy)
-                if i == 0 { path.move(to: wpt) } else { path.addLine(to: wpt) }
+            path.move(to: tl)
+            // 각 변 4개의 분절점으로 파형
+            for (a, b) in [(tl,tr),(tr,br),(br,bl),(bl,tl)] {
+                let t1 = CGPoint(x: a.x+(b.x-a.x)*0.33+CGFloat(rng.jitter(0.8)),
+                                 y: a.y+(b.y-a.y)*0.33+CGFloat(rng.jitter(0.8)))
+                let t2 = CGPoint(x: a.x+(b.x-a.x)*0.67+CGFloat(rng.jitter(0.8)),
+                                 y: a.y+(b.y-a.y)*0.67+CGFloat(rng.jitter(0.8)))
+                path.addLine(to: t1)
+                path.addLine(to: t2)
+                path.addLine(to: b)
             }
             path.closeSubpath()
 
-            let opacity = 0.55 + rng.next() * 0.2
-            let lw = 1.0 + CGFloat(rng.next() * 0.4)
-            ctx.stroke(path, with: .color(SketchTheme.Color.ruleLine.opacity(opacity)),
+            let lw = 1.6 + CGFloat(rng.next() * 0.5)
+            ctx.stroke(path, with: .color(SketchTheme.Color.ink.opacity(0.75)),
                        style: StrokeStyle(lineWidth: lw, lineCap: .round, lineJoin: .round))
         }
     }
-
-    // 둥근 사각형의 둘레 위 점들을 균등 간격으로 반환
-    private func buildRoundedRectPoints(size: CGSize, cornerRadius cr: CGFloat, inset: CGFloat, segments: Int) -> [CGPoint] {
-        let rect = CGRect(x: inset, y: inset, width: size.width - inset*2, height: size.height - inset*2)
-        let path = UIBezierPath(roundedRect: rect, cornerRadius: cr)
-        let cgPath = path.cgPath
-        // CGPath를 균등 점으로 분해
-        var points: [CGPoint] = []
-        let step = 1.0 / Double(segments)
-        for i in 0..<segments {
-            let t = CGFloat(Double(i) * step)
-            // 근사: 둘레를 따라 t 비율 위치
-            points.append(pointOnPath(cgPath, t: t, perimeter: cgPath.boundingBox.perimeter))
-        }
-        return points
-    }
-
-    private func pointOnPath(_ path: CGPath, t: CGFloat, perimeter: CGFloat) -> CGPoint {
-        // 단순 근사: 경계 박스의 모서리 기반 위치 (실제 곡선 보간 생략 — 충분히 자연스러움)
-        let box = path.boundingBox
-        let total = 2 * (box.width + box.height)
-        var dist = t * total
-        if dist < box.width { return CGPoint(x: box.minX + dist, y: box.minY) }
-        dist -= box.width
-        if dist < box.height { return CGPoint(x: box.maxX, y: box.minY + dist) }
-        dist -= box.height
-        if dist < box.width { return CGPoint(x: box.maxX - dist, y: box.maxY) }
-        dist -= box.width
-        return CGPoint(x: box.minX, y: box.maxY - dist)
-    }
-}
-
-private extension CGRect {
-    var perimeter: CGFloat { 2 * (width + height) }
 }
 
 // MARK: - 형광펜 밑줄
