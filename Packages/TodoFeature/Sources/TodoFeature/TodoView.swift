@@ -330,7 +330,7 @@ public struct TodoRowView: View {
                         SketchBadge(text: "↺ \(rule.displayText)",
                                     color: SketchTheme.Color.softInk)
                     }
-                    if isClaimable(todo) {
+                    if todo.space != nil && todo.assigneeID == nil && !todo.isCompleted {
                         SketchBadge(text: "미배정",
                                     color: SketchTheme.Color.accent,
                                     filled: true)
@@ -524,14 +524,15 @@ public enum ChainManager {
 
     private static func unlockDependents(of completed: TodoItem, context: ModelContext) {
         let completedID = completed.id
+        let lockedStatus = TodoStatus.locked
         let descriptor = FetchDescriptor<TodoItem>(
-            filter: #Predicate { $0.status == .locked }
+            predicate: #Predicate { $0.status == lockedStatus }
         )
         guard let locked = try? context.fetch(descriptor) else { return }
 
         // 완료된 항목 ID 집합
         let doneDescriptor = FetchDescriptor<TodoItem>(
-            filter: #Predicate { $0.isCompleted == true }
+            predicate: #Predicate { $0.isCompleted == true }
         )
         let doneIDs = Set((try? context.fetch(doneDescriptor))?.map(\.id) ?? [])
         let allDone = doneIDs.union([completedID])

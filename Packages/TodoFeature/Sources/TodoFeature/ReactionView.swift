@@ -47,7 +47,7 @@ public struct ReactionPicker: View {
     private func existingReaction(emoji: String) -> Reaction? {
         let todoID = todo.id
         let descriptor = FetchDescriptor<Reaction>(
-            filter: #Predicate {
+            predicate: #Predicate {
                 $0.todoID == todoID &&
                 $0.authorID == currentUserID &&
                 $0.emoji == emoji

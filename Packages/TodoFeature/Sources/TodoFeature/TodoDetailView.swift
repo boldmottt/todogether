@@ -126,7 +126,7 @@ struct PrerequisitePickerView: View {
     // 같은 공유방(또는 같은 개인 영역) + 자기 자신/이미 선행인 것 제외
     private var candidates: [TodoItem] {
         let spaceID = todo.space?.id
-        let descriptor = FetchDescriptor<TodoItem>(sort: [SortDescriptor(\.title)])
+        let descriptor = FetchDescriptor<TodoItem>(sortBy: [SortDescriptor(\.title)])
         let all = (try? context.fetch(descriptor)) ?? []
         let existing = Set(todo.prerequisiteIDs)
         return all.filter {
