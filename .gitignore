@@ -6,6 +6,7 @@ App/Info.plist
 
 # Xcode / SPM 빌드 산출물
 .build/
+build/
 DerivedData/
 *.xcuserstate
 xcuserdata/

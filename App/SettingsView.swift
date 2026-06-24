@@ -1,19 +1,21 @@
 import SwiftUI
 import AuthenticationServices
 import NotificationFeature
+import SharedModels
+import TodoFeature
 
 // MARK: - 설정 탭
-public struct SettingsView: View {
+struct SettingsView: View {
     @AppStorage("appLockEnabled") private var appLockEnabled = false
     @AppStorage("didDismissSignIn") private var didDismissSignIn = false
     @State private var notificationSettings = NotificationSettings.load()
     @ObservedObject var signIn: AppleSignInController
 
-    public init(signIn: AppleSignInController) {
+    init(signIn: AppleSignInController) {
         self.signIn = signIn
     }
 
-    public var body: some View {
+    var body: some View {
         List {
             // 계정
             Section("계정") {

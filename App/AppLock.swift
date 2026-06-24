@@ -1,5 +1,6 @@
 import SwiftUI
 import LocalAuthentication
+import SharedModels
 
 // MARK: - 앱 잠금 (I3) — Face ID / Touch ID
 @MainActor

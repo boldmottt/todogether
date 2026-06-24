@@ -1,6 +1,8 @@
 import SwiftUI
 import AuthenticationServices
 import Security
+import SharedModels
+import TodoFeature
 
 // MARK: - Keychain 헬퍼 (Apple User ID는 보안 자격증명이므로 Keychain 저장)
 private enum KeychainHelper {

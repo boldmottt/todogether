@@ -1,4 +1,5 @@
 import SwiftUI
+import SharedModels
 
 // MARK: - 온보딩 (I1) — 3단계
 struct OnboardingView: View {
