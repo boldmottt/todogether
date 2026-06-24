@@ -62,9 +62,11 @@ private struct TodoListContent: View {
 
     var body: some View {
         List {
+            // 줄노트 느낌의 헤더
             Section {
                 ForEach(activeTodos) { todo in
                     row(todo)
+                        .listRowBackground(SketchTheme.Color.card)
                         .swipeActions(edge: .leading) {
                             if todo.status == .available {
                                 Button {
@@ -101,23 +103,34 @@ private struct TodoListContent: View {
             }
 
             if !hideCompleted && !recentCompleted.isEmpty {
-                Section("완료됨 · 최근 7일") {
+                Section {
                     ForEach(recentCompleted) { todo in
                         row(todo)
+                            .listRowBackground(SketchTheme.Color.card.opacity(0.7))
                             .swipeActions(edge: .trailing) {
                                 Button(role: .destructive) { delete(todo) } label: {
                                     Label("삭제", systemImage: "trash")
                                 }
                             }
                     }
+                } header: {
+                    Text("완료됨 · 최근 7일")
+                        .font(SketchTheme.caption)
+                        .foregroundStyle(SketchTheme.Color.softInk)
+                        .textCase(nil)
                 }
             }
         }
+        .scrollContentBackground(.hidden)
+        .background(RuledBackground())
         .overlay {
             if activeTodos.isEmpty && recentCompleted.isEmpty {
-                ContentUnavailableView {
-                    Label(space == nil ? "오늘 할 일이 없어요" : "\(space?.name ?? "")방의 첫 할 일을 추가해봐요",
-                          systemImage: "checklist")
+                VStack(spacing: 16) {
+                    Text("✏️")
+                        .font(.system(size: 48))
+                    Text("할 일을 추가해봐요")
+                        .font(SketchTheme.headline)
+                        .foregroundStyle(SketchTheme.Color.softInk)
                 }
             }
         }
@@ -257,7 +270,7 @@ private struct UndoToast: View {
     }
 }
 
-// MARK: - 투두 행
+// MARK: - 투두 행 (손글씨 메모장 스타일)
 public struct TodoRowView: View {
     @Bindable var todo: TodoItem
     @Environment(\.modelContext) private var context
@@ -267,66 +280,89 @@ public struct TodoRowView: View {
     }
 
     public var body: some View {
-        HStack {
-            Button {
-                ChainManager.complete(todo, context: context)
-            } label: {
-                Image(systemName: todo.isCompleted ? "checkmark.circle.fill" : statusIcon)
-                    .foregroundStyle(statusColor)
-            }
-            .buttonStyle(.plain)
+        HStack(alignment: .top, spacing: 10) {
+            // 손글씨 체크박스
+            Toggle("", isOn: Binding(
+                get: { todo.isCompleted },
+                set: { _ in
+                    if todo.status == .available {
+                        ChainManager.complete(todo, context: context)
+                    }
+                }
+            ))
+            .toggleStyle(SketchCheckboxStyle(
+                completed: todo.isCompleted,
+                locked: todo.status == .locked
+            ))
+            .padding(.top, 2)
 
-            // C3: 공유방 색상 점
-            if let space = todo.space {
-                Circle()
-                    .fill(Color(todoHex: space.colorHex))
-                    .frame(width: 8, height: 8)
-            }
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(spacing: 6) {
+                    // 공유방 색상 점
+                    if let space = todo.space {
+                        Circle()
+                            .fill(Color(todoHex: space.colorHex))
+                            .frame(width: 7, height: 7)
+                            .padding(.top, 4)
+                    }
+                    Text(todo.title)
+                        .font(SketchTheme.body)
+                        .foregroundStyle(
+                            todo.isCompleted ? SketchTheme.Color.softInk :
+                            todo.status == .locked ? SketchTheme.Color.sand :
+                            SketchTheme.Color.ink
+                        )
+                        .strikethrough(todo.isCompleted,
+                                       color: SketchTheme.Color.softInk)
+                }
 
-            VStack(alignment: .leading, spacing: 2) {
-                Text(todo.title)
-                    .strikethrough(todo.isCompleted)
-                    .foregroundStyle(todo.status == .locked ? .secondary : .primary)
+                // 메타 뱃지들
                 HStack(spacing: 6) {
                     if let due = todo.dueDate {
-                        Text(due, style: .date)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                        SketchBadge(
+                            text: due.formatted(.dateTime.month(.abbreviated).day()),
+                            color: isOverdue(due) ? SketchTheme.Color.accent : SketchTheme.Color.softInk
+                        )
                     }
-                    // B3: 반복 배지
                     if let rule = todo.recurrence {
-                        Label(rule.displayText, systemImage: "repeat")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                            .labelStyle(.titleAndIcon)
+                        SketchBadge(text: "↺ \(rule.displayText)",
+                                    color: SketchTheme.Color.softInk)
                     }
-                    // Donetick 클레이밍: 미배정 공유방 투두 강조
                     if isClaimable(todo) {
-                        Text("미배정")
-                            .font(.caption2)
-                            .padding(.horizontal, 4).padding(.vertical, 1)
-                            .background(.blue.opacity(0.15), in: Capsule())
-                            .foregroundStyle(.blue)
+                        SketchBadge(text: "미배정",
+                                    color: SketchTheme.Color.accent,
+                                    filled: true)
                     }
                 }
             }
         }
+        .padding(.vertical, 6)
     }
 
-    private var statusIcon: String {
-        switch todo.status {
-        case .locked: "lock.circle"
-        case .available: "circle"
-        case .completed: "checkmark.circle.fill"
-        }
+    private func isOverdue(_ date: Date) -> Bool {
+        date < Calendar.current.startOfDay(for: Date()) && !todo.isCompleted
     }
+}
 
-    private var statusColor: Color {
-        switch todo.status {
-        case .locked: .secondary
-        case .available: .primary
-        case .completed: .green
-        }
+/// 손글씨 느낌의 작은 라벨 뱃지
+struct SketchBadge: View {
+    let text: String
+    var color: Color = SketchTheme.Color.softInk
+    var filled: Bool = false
+
+    var body: some View {
+        Text(text)
+            .font(SketchTheme.nano)
+            .foregroundStyle(filled ? .white : color)
+            .padding(.horizontal, 6).padding(.vertical, 2)
+            .background(
+                filled ? color : color.opacity(0.12),
+                in: RoundedRectangle(cornerRadius: 4)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 4)
+                    .stroke(color.opacity(filled ? 0 : 0.35), lineWidth: 1)
+            )
     }
 }
 

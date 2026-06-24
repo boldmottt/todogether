@@ -89,6 +89,36 @@ struct ContentView: View {
     @Binding var deepLinkedTodoID: UUID?
     @ObservedObject var signIn: AppleSignInController
 
+    init(deepLinkedTodoID: Binding<UUID?>, signIn: AppleSignInController) {
+        _deepLinkedTodoID = deepLinkedTodoID
+        self.signIn = signIn
+        // 탭바 + 네비게이션바를 크림색으로 통일
+        let paper = UIColor(red: 0.996, green: 0.980, blue: 0.878, alpha: 1)  // #FEFAE0
+        let inkColor = UIColor(red: 0.176, green: 0.165, blue: 0.133, alpha: 1)  // #2D2A22
+
+        let tabBarAppearance = UITabBarAppearance()
+        tabBarAppearance.configureWithOpaqueBackground()
+        tabBarAppearance.backgroundColor = paper
+        UITabBar.appearance().standardAppearance = tabBarAppearance
+        UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
+
+        let navAppearance = UINavigationBarAppearance()
+        navAppearance.configureWithOpaqueBackground()
+        navAppearance.backgroundColor = paper
+        navAppearance.shadowColor = UIColor(red: 0.769, green: 0.722, blue: 0.627, alpha: 0.5)
+        navAppearance.titleTextAttributes = [
+            .font: UIFont(name: "Noteworthy-Bold", size: 17) ?? UIFont.boldSystemFont(ofSize: 17),
+            .foregroundColor: inkColor
+        ]
+        navAppearance.largeTitleTextAttributes = [
+            .font: UIFont(name: "Noteworthy-Bold", size: 32) ?? UIFont.boldSystemFont(ofSize: 32),
+            .foregroundColor: inkColor
+        ]
+        UINavigationBar.appearance().standardAppearance = navAppearance
+        UINavigationBar.appearance().scrollEdgeAppearance = navAppearance
+        UINavigationBar.appearance().compactAppearance = navAppearance
+    }
+
     var body: some View {
         TabView {
             NavigationStack {

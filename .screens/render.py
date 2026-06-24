@@ -24,7 +24,7 @@ try:
 except Exception:
     _emoji_ok = False
 
-# 색상
+# 기존 시스템 색상 (기존 화면용)
 INK = (20, 20, 24)
 SUB = (140, 142, 150)
 LINE = (228, 230, 235)
@@ -35,6 +35,16 @@ GREEN = (52, 199, 89)
 RED = (255, 59, 48)
 ORANGE = (255, 149, 0)
 PURPLE = (94, 92, 230)
+
+# 손글씨 메모장 테마 색상
+SK_PAPER  = (254, 250, 224)   # #FEFAE0 크림
+SK_CARD   = (255, 253, 245)   # #FFFDF5
+SK_INK    = (45,  42,  34)    # #2D2A22 따뜻한 다크
+SK_SOFT   = (140, 123, 107)   # #8C7B6B 연한 갈색
+SK_RULE   = (196, 184, 160)   # #C4B8A0 줄선
+SK_ACCENT = (224, 122,  95)   # #E07A5F 테라코타
+SK_SAGE   = (129, 178, 154)   # #81B29A 세이지
+SK_SAND   = (196, 168, 130)   # #C4A882
 
 def emoji_img(ch, px):
     """컬러 이모지 한 글자를 px 크기 RGBA 이미지로."""
@@ -393,6 +403,98 @@ def notif_settings():
     d.text((28 * S, y), "자정을 넘는 구간(22시~8시)도 설정할 수 있어요", font=f(11), fill=SUB)
     img.save(os.path.join(OUT, "08_notif_settings.png"))
 
+def sketch_todo_list():
+    """손글씨 메모장 감성 투두 리스트"""
+    img = Image.new("RGB", (W, H), SK_PAPER)
+    d = ImageDraw.Draw(img)
+    # 줄노트 배경
+    for i in range(60):
+        y = (50 + i * 36) * S
+        d.line([(0, y), (W, y)], fill=SK_RULE, width=1)
+    # 상태바
+    d.text((20*S, 14*S), "9:41", font=f(14,True), fill=SK_INK)
+    d.text((W-70*S, 14*S), "▮▮▮ ▮", font=f(12), fill=SK_INK)
+    # 네비바
+    d.line([(0, 90*S), (W, 90*S)], fill=SK_RULE, width=1)
+    d.text((W/2, 62*S), "투두", font=f(20,True), fill=SK_INK, anchor="mm")
+    d.text((20*S, 62*S), "≡", font=f(22), fill=SK_SOFT, anchor="lm")
+    d.text((W-24*S, 62*S), "✏", font=f(20), fill=SK_ACCENT, anchor="rm")
+
+    # (status, title, date_str, badge_str, dot_color, done)
+    rows = [
+        ("available", "장보기",       "오늘",   None,      (94,92,230),   False),
+        ("locked",    "요리하기",      None,     None,      (94,92,230),   False),
+        ("available", "분리수거",      "내일",   None,      (224,122,95),  False),
+        ("available", "운동 30분",     "오늘",   "↺ 매일", (129,178,154), False),
+        ("completed", "팀 미팅 참석",  "어제",   None,      (94,92,230),   True),
+    ]
+    y = 108 * S
+    for (status, title, date, badge, dot, done) in rows:
+        row_h = 58 * S
+        # 카드 배경
+        rounded(d, (12*S, y+2*S, W-12*S, y+row_h-4*S), 10*S, fill=SK_CARD)
+        rounded(d, (12*S, y+2*S, W-12*S, y+row_h-4*S), 10*S,
+                outline=SK_RULE, width=1)
+
+        # 손글씨 체크박스
+        cx, cy2 = int(36*S), int(y + row_h//2)
+        r = int(11*S)
+        # 약간 삐뚤한 원
+        pts = []
+        import math
+        for i in range(8):
+            a = i / 8 * 2 * math.pi
+            wobble_r = r + [-1,-1,1,1,0,-1,1,0][i]
+            pts.append((cx + wobble_r*math.cos(a), cy2 + wobble_r*math.sin(a)))
+        for i in range(len(pts)):
+            p1, p2 = pts[i], pts[(i+1)%len(pts)]
+            col = SK_SAGE if done else (SK_SAND if status=="locked" else SK_SOFT)
+            d.line([p1, p2], fill=col, width=int(1.8*S))
+        if done:
+            # 체크 표시
+            d.line([(cx-5*S, cy2+1*S), (cx-1*S, cy2+5*S)], fill=SK_SAGE, width=int(2.2*S))
+            d.line([(cx-1*S, cy2+5*S), (cx+6*S, cy2-5*S)], fill=SK_SAGE, width=int(2.2*S))
+        elif status == "locked":
+            d.text((cx, cy2), "🔒", font=f(9), fill=SK_SAND, anchor="mm")
+
+        # 공유방 색상 점
+        d.ellipse((54*S, cy2-4*S, 62*S, cy2+4*S), fill=dot)
+
+        # 제목
+        tx = 70 * S
+        title_col = SK_SOFT if (done or status=="locked") else SK_INK
+        d.text((tx, y+14*S), title, font=f(15,True), fill=title_col)
+        if done:
+            d.line([(tx, y+22*S), (tx + len(title)*8*S, y+22*S)], fill=SK_SOFT, width=1)
+
+        # 뱃지
+        bx = tx
+        if date:
+            date_col = SK_ACCENT if (not done and date=="오늘") else SK_SOFT
+            d.text((bx, y+38*S), date, font=f(10), fill=date_col)
+            bx += (len(date)*7+4)*S
+        if badge:
+            d.text((bx, y+38*S), badge, font=f(10), fill=SK_SOFT)
+
+        y += row_h
+
+    # 완료됨 섹션 헤더
+    y += 8*S
+    d.text((24*S, y), "완료됨 · 최근 7일", font=f(11), fill=SK_SOFT)
+    y += 24*S
+
+    # 탭바 (크림 배경)
+    d.rectangle([(0, H-80*S), (W, H)], fill=SK_PAPER)
+    d.line([(0, H-80*S), (W, H-80*S)], fill=SK_RULE, width=1)
+    items = [("□","투두"), ("▦","캘린더"), ("◎","공유방"), ("▤","템플릿"), ("⚙","설정")]
+    for i, (ic, label) in enumerate(items):
+        cx2 = W * (i+0.5) / 5
+        col = SK_ACCENT if i==0 else SK_SOFT
+        d.text((cx2, H-52*S), ic, font=f(18), fill=col, anchor="mm")
+        d.text((cx2, H-28*S), label, font=f(10), fill=col, anchor="mm")
+
+    img.save(os.path.join(OUT, "14_sketch_todo.png"))
+
 def apple_signin():
     img, d = base()
     # 중앙 로고
@@ -543,6 +645,6 @@ if __name__ == "__main__":
     todo_list(); todo_detail(); calendar(); widget()
     onboarding(); space_detail(); reaction(); notif_settings()
     settings(); todo_list_claiming(); add_todo_nlp()
-    apple_signin(); invite_code()
+    apple_signin(); invite_code(); sketch_todo_list()
     print("emoji_color:", _emoji_ok)
     print("rendered:", sorted(os.listdir(OUT)))
