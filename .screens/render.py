@@ -10,8 +10,8 @@ OUT = os.path.dirname(os.path.abspath(__file__))
 S = 2  # 2x 스케일
 W, H = 390 * S, 844 * S
 
-KR = "/usr/share/fonts/truetype/nanum/NanumBarunGothic.ttf"
-KRB = "/usr/share/fonts/truetype/nanum/NanumBarunGothicBold.ttf"
+KR = "/usr/share/fonts/truetype/nanum/NanumSquareRoundR.ttf"
+KRB = "/usr/share/fonts/truetype/nanum/NanumSquareRoundB.ttf"
 EMOJI = "/usr/share/fonts/truetype/noto/NotoColorEmoji.ttf"
 
 def f(size, bold=False):
