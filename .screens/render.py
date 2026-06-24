@@ -403,69 +403,150 @@ def notif_settings():
     d.text((28 * S, y), "자정을 넘는 구간(22시~8시)도 설정할 수 있어요", font=f(11), fill=SUB)
     img.save(os.path.join(OUT, "08_notif_settings.png"))
 
+def seeded_rng(seed):
+    """씨앗 기반 LCG 난수 생성기 (파이썬 버전)"""
+    state = (seed * 2654435761) & 0xFFFFFFFFFFFFFFFF
+    # warm-up
+    state = (state * 6364136223846793005 + 1442695040888963407) & 0xFFFFFFFFFFFFFFFF
+    state = (state * 6364136223846793005 + 1442695040888963407) & 0xFFFFFFFFFFFFFFFF
+    def next_val():
+        nonlocal state
+        state = (state * 6364136223846793005 + 1442695040888963407) & 0xFFFFFFFFFFFFFFFF
+        return (state >> 33) / (1 << 31)
+    return next_val
+
+def draw_wobbly_line(d, y_base, width, seed):
+    """손으로 그린 것처럼 흔들리는 줄을 그린다"""
+    import math
+    rng = seeded_rng(seed)
+    opacity_factor = 0.28 + rng() * 0.18
+    lw = max(1, int((0.6 + rng() * 0.5) * S))
+    # 잉크 색 (RGB)
+    r_c = int(SK_RULE[0] * opacity_factor + SK_PAPER[0] * (1 - opacity_factor))
+    g_c = int(SK_RULE[1] * opacity_factor + SK_PAPER[1] * (1 - opacity_factor))
+    b_c = int(SK_RULE[2] * opacity_factor + SK_PAPER[2] * (1 - opacity_factor))
+    ink = (r_c, g_c, b_c)
+
+    seg_w = 18 * S
+    segs = int(width / seg_w) + 2
+    pts = []
+    for s in range(segs):
+        x = s * seg_w
+        dy = (rng() * 2 - 1) * 0.9 * S
+        pts.append((x, y_base + dy))
+
+    for i in range(len(pts) - 1):
+        d.line([pts[i], pts[i+1]], fill=ink, width=lw)
+
+def draw_wobbly_circle(d, cx, cy, r, seed, done, locked):
+    """씨앗 기반으로 삐뚤빼뚤한 원을 그린다"""
+    import math
+    rng = seeded_rng(seed)
+    n_pts = 7 + int(rng() * 4)
+    wobble = 0.8 + rng() * 1.0
+    pts = []
+    for i in range(n_pts):
+        a = i / n_pts * 2 * math.pi
+        dx = (rng() * 2 - 1) * wobble * S
+        dy = (rng() * 2 - 1) * wobble * S
+        pts.append((cx + (r + dx) * math.cos(a), cy + (r + dy) * math.sin(a)))
+    col = SK_SAGE if done else (SK_SAND if locked else SK_SOFT)
+    lw = max(1, int((1.6 + rng() * 0.6) * S))
+    for i in range(len(pts)):
+        p1, p2 = pts[i], pts[(i+1) % len(pts)]
+        d.line([p1, p2], fill=col, width=lw)
+
+def draw_checkmark(d, cx, cy, seed):
+    """씨앗 기반으로 조금씩 다른 체크 모양을 그린다"""
+    rng = seeded_rng(seed + 9999)
+    style = int(rng() * 4)
+    j = lambda: (rng() * 2 - 1) * 1.6 * S
+    r = 11 * S  # 원 반지름 기준
+    if style == 0:
+        p1 = (cx - 5*S + j(), cy + 1*S + j())
+        p2 = (cx - 1*S + j(), cy + 5*S + j())
+        p3 = (cx + 6*S + j(), cy - 5*S + j())
+    elif style == 1:
+        p1 = (cx - 6*S + j(), cy + 2*S + j())
+        p2 = (cx - 1*S + j(), cy + 5*S + j())
+        p3 = (cx + 7*S + j(), cy - 6*S + j())
+    elif style == 2:
+        p1 = (cx - 7*S + j(), cy + j())
+        p2 = (cx - 2*S + j(), cy + 5*S + j())
+        p3 = (cx + 7*S + j(), cy - 7*S + j())
+    else:
+        p1 = (cx - 5*S + j(), cy - 1*S + j())
+        p2 = (cx - 2*S + j(), cy + 4*S + j())
+        p3 = (cx + 5*S + j(), cy - 4*S + j())
+    lw = max(1, int((2.0 + rng() * 0.5) * S))
+    d.line([p1, p2], fill=SK_SAGE, width=lw)
+    d.line([p2, p3], fill=SK_SAGE, width=lw)
+
+
 def sketch_todo_list():
-    """손글씨 메모장 감성 투두 리스트"""
+    """손글씨 메모장 감성 투두 리스트 — 아날로그 다이어리 버전"""
+    import math
     img = Image.new("RGB", (W, H), SK_PAPER)
     d = ImageDraw.Draw(img)
-    # 줄노트 배경
-    for i in range(60):
-        y = (50 + i * 36) * S
-        d.line([(0, y), (W, y)], fill=SK_RULE, width=1)
+
+    # 손으로 그린 줄노트 배경 (세그먼트마다 미세하게 흔들림)
+    for i in range(55):
+        y_base = (48 + i * 36) * S
+        draw_wobbly_line(d, y_base, W, seed=i * 137 + 17)
+
     # 상태바
     d.text((20*S, 14*S), "9:41", font=f(14,True), fill=SK_INK)
     d.text((W-70*S, 14*S), "▮▮▮ ▮", font=f(12), fill=SK_INK)
-    # 네비바
-    d.line([(0, 90*S), (W, 90*S)], fill=SK_RULE, width=1)
+
+    # 네비바 (크림 배경)
+    d.rectangle([(0, 0), (W, 90*S)], fill=SK_PAPER)
+    draw_wobbly_line(d, 90*S, W, seed=999)
     d.text((W/2, 62*S), "투두", font=f(20,True), fill=SK_INK, anchor="mm")
     d.text((20*S, 62*S), "≡", font=f(22), fill=SK_SOFT, anchor="lm")
     d.text((W-24*S, 62*S), "✏", font=f(20), fill=SK_ACCENT, anchor="rm")
 
-    # (status, title, date_str, badge_str, dot_color, done)
+    # (seed_base, status, title, date_str, badge_str, dot_color, done)
     rows = [
-        ("available", "장보기",       "오늘",   None,      (94,92,230),   False),
-        ("locked",    "요리하기",      None,     None,      (94,92,230),   False),
-        ("available", "분리수거",      "내일",   None,      (224,122,95),  False),
-        ("available", "운동 30분",     "오늘",   "↺ 매일", (129,178,154), False),
-        ("completed", "팀 미팅 참석",  "어제",   None,      (94,92,230),   True),
+        (1001, "available", "장보기",       "오늘",   None,      (94,92,230),   False),
+        (2002, "locked",    "요리하기",      None,     None,      (94,92,230),   False),
+        (3003, "available", "분리수거",      "내일",   None,      (224,122,95),  False),
+        (4004, "available", "운동 30분",     "오늘",   "↺ 매일", (129,178,154), False),
+        (5005, "completed", "팀 미팅 참석",  "어제",   None,      (94,92,230),   True),
     ]
     y = 108 * S
-    for (status, title, date, badge, dot, done) in rows:
+    for (seed_b, status, title, date, badge, dot, done) in rows:
         row_h = 58 * S
-        # 카드 배경
+        # 카드 배경 (크림색)
         rounded(d, (12*S, y+2*S, W-12*S, y+row_h-4*S), 10*S, fill=SK_CARD)
-        rounded(d, (12*S, y+2*S, W-12*S, y+row_h-4*S), 10*S,
-                outline=SK_RULE, width=1)
+        # 손으로 그린 것 같은 테두리 — 약간 불규칙한 점선처럼
+        rng_b = seeded_rng(seed_b + 42)
+        brd_opacity = 0.55 + rng_b() * 0.2
+        brd_col = (
+            int(SK_RULE[0] * brd_opacity + SK_PAPER[0] * (1 - brd_opacity)),
+            int(SK_RULE[1] * brd_opacity + SK_PAPER[1] * (1 - brd_opacity)),
+            int(SK_RULE[2] * brd_opacity + SK_PAPER[2] * (1 - brd_opacity)),
+        )
+        rounded(d, (12*S, y+2*S, W-12*S, y+row_h-4*S), 10*S, outline=brd_col, width=max(1, int(S*0.9)))
 
-        # 손글씨 체크박스
-        cx, cy2 = int(36*S), int(y + row_h//2)
-        r = int(11*S)
-        # 약간 삐뚤한 원
-        pts = []
-        import math
-        for i in range(8):
-            a = i / 8 * 2 * math.pi
-            wobble_r = r + [-1,-1,1,1,0,-1,1,0][i]
-            pts.append((cx + wobble_r*math.cos(a), cy2 + wobble_r*math.sin(a)))
-        for i in range(len(pts)):
-            p1, p2 = pts[i], pts[(i+1)%len(pts)]
-            col = SK_SAGE if done else (SK_SAND if status=="locked" else SK_SOFT)
-            d.line([p1, p2], fill=col, width=int(1.8*S))
+        # 손글씨 체크박스 (씨앗마다 다른 모양)
+        cx_cb = int(36*S)
+        cy_cb = int(y + row_h // 2)
+        r_cb  = int(11*S)
+        draw_wobbly_circle(d, cx_cb, cy_cb, r_cb, seed=seed_b, done=done, locked=(status=="locked"))
         if done:
-            # 체크 표시
-            d.line([(cx-5*S, cy2+1*S), (cx-1*S, cy2+5*S)], fill=SK_SAGE, width=int(2.2*S))
-            d.line([(cx-1*S, cy2+5*S), (cx+6*S, cy2-5*S)], fill=SK_SAGE, width=int(2.2*S))
-        elif status == "locked":
-            d.text((cx, cy2), "🔒", font=f(9), fill=SK_SAND, anchor="mm")
+            draw_checkmark(d, cx_cb, cy_cb, seed=seed_b)
 
         # 공유방 색상 점
-        d.ellipse((54*S, cy2-4*S, 62*S, cy2+4*S), fill=dot)
+        d.ellipse((54*S, cy_cb-4*S, 62*S, cy_cb+4*S), fill=dot)
 
         # 제목
         tx = 70 * S
         title_col = SK_SOFT if (done or status=="locked") else SK_INK
         d.text((tx, y+14*S), title, font=f(15,True), fill=title_col)
         if done:
-            d.line([(tx, y+22*S), (tx + len(title)*8*S, y+22*S)], fill=SK_SOFT, width=1)
+            # 취소선 (약간 흔들리게)
+            strikey = y + 22*S
+            d.line([(tx, strikey), (tx + len(title)*8*S, strikey + int((seeded_rng(seed_b)()*2-1)*1*S))], fill=SK_SOFT, width=1)
 
         # 뱃지
         bx = tx
@@ -481,11 +562,10 @@ def sketch_todo_list():
     # 완료됨 섹션 헤더
     y += 8*S
     d.text((24*S, y), "완료됨 · 최근 7일", font=f(11), fill=SK_SOFT)
-    y += 24*S
 
     # 탭바 (크림 배경)
     d.rectangle([(0, H-80*S), (W, H)], fill=SK_PAPER)
-    d.line([(0, H-80*S), (W, H-80*S)], fill=SK_RULE, width=1)
+    draw_wobbly_line(d, H-80*S, W, seed=888)
     items = [("□","투두"), ("▦","캘린더"), ("◎","공유방"), ("▤","템플릿"), ("⚙","설정")]
     for i, (ic, label) in enumerate(items):
         cx2 = W * (i+0.5) / 5

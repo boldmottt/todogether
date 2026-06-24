@@ -292,7 +292,8 @@ public struct TodoRowView: View {
             ))
             .toggleStyle(SketchCheckboxStyle(
                 completed: todo.isCompleted,
-                locked: todo.status == .locked
+                locked: todo.status == .locked,
+                seed: todo.id.hashValue
             ))
             .padding(.top, 2)
 
