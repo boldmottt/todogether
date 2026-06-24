@@ -103,309 +103,9 @@ def tabbar(d, active=0):
         d.text((cx, y + 6 * S), ic, font=f(18), fill=col, anchor="mm")
         d.text((cx, y + 28 * S), label, font=f(10), fill=col, anchor="mm")
 
-# ---------------- 1. Todo List ----------------
-def todo_list():
-    img, d = base()
-    navbar(d, "투두", left="≣", right_icons=["+"])
-    y = 100 * S
-    # 활성 카드
-    rows = [
-        ("circle", "장보기", "오늘", None, PURPLE, False),
-        ("lock", "요리하기", None, "매주 월·수·금", PURPLE, False),
-        ("circle", "분리수거", "내일", None, ORANGE, False),
-    ]
-    card_h = 64 * S
-    rounded(d, (16 * S, y, W - 16 * S, y + card_h * len(rows)), 14 * S, fill=CARD)
-    for i, (icon, title, date, badge, dot, done) in enumerate(rows):
-        ry = y + i * card_h
-        cx = 40 * S
-        if icon == "lock":
-            d.ellipse((cx - 11 * S, ry + card_h/2 - 11 * S, cx + 11 * S, ry + card_h/2 + 11 * S), outline=SUB, width=2 * S)
-            d.text((cx, ry + card_h/2), "🔒", font=f(11), fill=SUB, anchor="mm")
-        else:
-            d.ellipse((cx - 11 * S, ry + card_h/2 - 11 * S, cx + 11 * S, ry + card_h/2 + 11 * S), outline=SUB, width=2 * S)
-        # space dot
-        d.ellipse((62 * S, ry + card_h/2 - 5 * S, 72 * S, ry + card_h/2 + 5 * S), fill=dot)
-        tcol = SUB if icon == "lock" else INK
-        d.text((84 * S, ry + 18 * S), title, font=f(16), fill=tcol)
-        meta_x = 84 * S
-        if date:
-            d.text((meta_x, ry + 40 * S), date, font=f(12), fill=SUB)
-            meta_x += 60 * S
-        if badge:
-            d.text((meta_x, ry + 40 * S), "↻ " + badge, font=f(12), fill=SUB)
-        if i < len(rows) - 1:
-            d.line([(84 * S, ry + card_h), (W - 16 * S, ry + card_h)], fill=LINE, width=S)
-    y += card_h * len(rows) + 24 * S
-    # 완료 섹션
-    d.text((28 * S, y), "완료됨 · 최근 7일", font=f(13, True), fill=SUB)
-    y += 24 * S
-    rounded(d, (16 * S, y, W - 16 * S, y + 76 * S), 14 * S, fill=CARD)
-    cx = 40 * S
-    d.ellipse((cx - 11 * S, y + 22 * S, cx + 11 * S, y + 44 * S), fill=GREEN)
-    d.line([(cx - 5 * S, y + 33 * S), (cx - 1 * S, y + 38 * S), (cx + 6 * S, y + 27 * S)], fill=(255, 255, 255), width=2 * S)
-    d.ellipse((62 * S, y + 28 * S, 72 * S, y + 38 * S), fill=PURPLE)
-    d.text((84 * S, y + 16 * S), "설거지", font=f(16), fill=SUB)
-    # 취소선
-    tw = d.textlength("설거지", font=f(16))
-    d.line([(84 * S, y + 25 * S), (84 * S + tw, y + 25 * S)], fill=SUB, width=S)
-    # 반응 칩
-    chipx = 84 * S
-    for ch, cnt in [("👍", "2"), ("❤️", "1"), ("🎉", "1")]:
-        cw = 44 * S
-        rounded(d, (chipx, y + 46 * S, chipx + cw, y + 66 * S), 10 * S, fill=(238, 240, 245))
-        if not paste_emoji(img, ch, (chipx + 6 * S, y + 49 * S), 15 * S):
-            d.text((chipx + 6 * S, y + 49 * S), "•", font=f(13), fill=INK)
-        d.text((chipx + 26 * S, y + 49 * S), cnt, font=f(11, True), fill=SUB)
-        chipx += cw + 6 * S
-    tabbar(d, 0)
-    img.save(os.path.join(OUT, "01_todo_list.png"))
-
-# ---------------- 2. Todo Detail ----------------
-def todo_detail():
-    img, d = base()
-    navbar(d, "할 일", left="‹ 투두")
-    y = 100 * S
-    def section(title, rows_h):
-        nonlocal y
-        d.text((28 * S, y), title, font=f(12, True), fill=SUB)
-        y += 22 * S
-        rounded(d, (16 * S, y, W - 16 * S, y + rows_h), 12 * S, fill=CARD)
-    section("", 92 * S)
-    d.text((32 * S, y + 16 * S), "요리하기", font=f(17, True), fill=INK)
-    d.line([(32 * S, y + 46 * S), (W - 32 * S, y + 46 * S)], fill=LINE, width=S)
-    d.text((32 * S, y + 58 * S), "재료 손질부터 시작", font=f(14), fill=SUB)
-    y += 92 * S + 20 * S
-    section("마감", 96 * S)
-    d.text((32 * S, y + 16 * S), "날짜 지정", font=f(15), fill=INK)
-    d.text((W - 36 * S, y + 14 * S), "ON", font=f(12, True), fill=(255, 255, 255), anchor="rm")
-    rounded(d, (W - 78 * S, y + 8 * S, W - 32 * S, y + 32 * S), 12 * S, fill=GREEN)
-    d.ellipse((W - 54 * S, y + 10 * S, W - 34 * S, y + 30 * S), fill=(255, 255, 255))
-    d.line([(32 * S, y + 48 * S), (W - 32 * S, y + 48 * S)], fill=LINE, width=S)
-    d.text((32 * S, y + 60 * S), "마감일", font=f(15), fill=INK)
-    d.text((W - 32 * S, y + 60 * S), "6월 25일", font=f(15), fill=BLUE, anchor="rm")
-    y += 96 * S + 20 * S
-    section("반복", 48 * S)
-    d.text((32 * S, y + 15 * S), "↻ 반복", font=f(15), fill=INK)
-    d.text((W - 32 * S, y + 15 * S), "매주 월·수·금", font=f(15), fill=SUB, anchor="rm")
-    y += 48 * S + 20 * S
-    # 연계
-    d.text((28 * S, y), "이 일을 하기 전에", font=f(12, True), fill=SUB)
-    y += 22 * S
-    rounded(d, (16 * S, y, W - 16 * S, y + 92 * S), 12 * S, fill=CARD)
-    d.ellipse((34 * S, y + 16 * S, 50 * S, y + 32 * S), fill=GREEN)
-    d.line([(38 * S, y + 24 * S), (41 * S, y + 28 * S), (47 * S, y + 19 * S)], fill=(255, 255, 255), width=2 * S)
-    d.text((62 * S, y + 15 * S), "장보기", font=f(15), fill=INK)
-    d.line([(32 * S, y + 46 * S), (W - 32 * S, y + 46 * S)], fill=LINE, width=S)
-    d.text((32 * S, y + 58 * S), "🔗 선행 조건 추가", font=f(15), fill=BLUE)
-    y += 92 * S + 10 * S
-    d.text((28 * S, y), "선행 조건이 완료되면 자동으로 활성화돼요", font=f(11), fill=SUB)
-    img.save(os.path.join(OUT, "02_todo_detail.png"))
-
-# ---------------- 3. Calendar ----------------
-def calendar():
-    img, d = base()
-    navbar(d, "캘린더", right_icons=["▦"])
-    y = 100 * S
-    # 주간 스트립
-    days = ["일", "월", "화", "수", "목", "금", "토"]
-    nums = [22, 23, 24, 25, 26, 27, 28]
-    dots = [[], [PURPLE], [ORANGE, PURPLE], [PURPLE], [], [BLUE], []]
-    cellw = (W - 32 * S) / 7
-    for i in range(7):
-        cx = 16 * S + cellw * (i + 0.5)
-        d.text((cx, y), days[i], font=f(11), fill=SUB, anchor="mm")
-        sel = (i == 2)
-        if sel:
-            d.ellipse((cx - 16 * S, y + 16 * S, cx + 16 * S, y + 48 * S), fill=BLUE)
-        d.text((cx, y + 32 * S), str(nums[i]), font=f(15, True if i == 2 else False),
-               fill=(255, 255, 255) if sel else INK, anchor="mm")
-        dx = cx - (len(dots[i]) - 1) * 4 * S
-        for c in dots[i]:
-            d.ellipse((dx - 2.5 * S, y + 56 * S, dx + 2.5 * S, y + 61 * S), fill=c)
-            dx += 8 * S
-    y += 80 * S
-    d.line([(0, y), (W, y)], fill=LINE, width=S)
-    y += 16 * S
-    # 피드 섹션
-    def feed_section(title, color, items):
-        nonlocal y
-        d.text((28 * S, y), title, font=f(13, True), fill=color)
-        y += 26 * S
-        rounded(d, (16 * S, y, W - 16 * S, y + 56 * S * len(items)), 12 * S, fill=CARD)
-        for j, (t, dot, tint) in enumerate(items):
-            ry = y + j * 56 * S
-            d.ellipse((36 * S, ry + 18 * S, 56 * S, ry + 38 * S), outline=SUB, width=2 * S)
-            d.ellipse((66 * S, ry + 23 * S, 76 * S, ry + 33 * S), fill=dot)
-            d.text((88 * S, ry + 18 * S), t, font=f(15), fill=INK)
-            if tint:
-                rounded(d, (W - 70 * S, ry + 16 * S, W - 26 * S, ry + 38 * S), 8 * S, fill=(255, 235, 235))
-                d.text((W - 48 * S, ry + 20 * S), "지남", font=f(11, True), fill=RED, anchor="mm")
-            if j < len(items) - 1:
-                d.line([(88 * S, ry + 56 * S), (W - 16 * S, ry + 56 * S)], fill=LINE, width=S)
-        y += 56 * S * len(items) + 18 * S
-    feed_section("마감 지남", RED, [("월세 이체", BLUE, True)])
-    feed_section("오늘", INK, [("장보기", PURPLE, False), ("운동하기", ORANGE, False)])
-    feed_section("내일", INK, [("분리수거", PURPLE, False)])
-    tabbar(d, 1)
-    img.save(os.path.join(OUT, "03_calendar.png"))
-
-# ---------------- 4. Widget ----------------
-def widget():
-    img = Image.new("RGB", (W, H), (60, 70, 95))
-    d = ImageDraw.Draw(img)
-    # 그라데이션 느낌 배경
-    for i in range(H):
-        t = i / H
-        col = (int(60 + 40 * t), int(70 + 30 * t), int(95 + 20 * t))
-        d.line([(0, i), (W, i)], fill=col)
-    d.text((20 * S, 14 * S), "9:41", font=f(14, True), fill=(255, 255, 255))
-    # 위젯 카드 (medium)
-    mx, my = 24 * S, 120 * S
-    mw, mh = W - 48 * S, 170 * S
-    rounded(d, (mx, my, mx + mw, my + mh), 24 * S, fill=(255, 255, 255))
-    d.text((mx + 22 * S, my + 18 * S), "오늘 할 일", font=f(13, True), fill=SUB)
-    rows = [("장보기", False), ("요리하기", False), ("운동하기", True), ("분리수거", False)]
-    ry = my + 46 * S
-    for t, done in rows:
-        cx = mx + 32 * S
-        if done:
-            d.ellipse((cx - 10 * S, ry, cx + 10 * S, ry + 20 * S), fill=GREEN)
-            d.line([(cx - 4 * S, ry + 10 * S), (cx - 1 * S, ry + 14 * S), (cx + 5 * S, ry + 5 * S)], fill=(255, 255, 255), width=2 * S)
-        else:
-            d.ellipse((cx - 10 * S, ry, cx + 10 * S, ry + 20 * S), outline=SUB, width=2 * S)
-        col = SUB if done else INK
-        d.text((cx + 22 * S, ry), t, font=f(15), fill=col)
-        if done:
-            tw = d.textlength(t, font=f(15))
-            d.line([(cx + 22 * S, ry + 10 * S), (cx + 22 * S + tw, ry + 10 * S)], fill=SUB, width=S)
-        ry += 30 * S
-    d.text((W/2, my + mh + 30 * S), "todogether 위젯 · 탭하면 완료", font=f(12), fill=(230, 230, 240), anchor="mm")
-    img.save(os.path.join(OUT, "04_widget.png"))
-
-# ---------------- 5. Onboarding ----------------
-def onboarding():
-    img, d = base()
-    cx = W / 2
-    # 아이콘 원
-    d.ellipse((cx - 70 * S, 250 * S, cx + 70 * S, 390 * S), fill=(237, 236, 252))
-    d.text((cx, 320 * S), "👥", font=f(48), fill=PURPLE, anchor="mm")
-    paste_emoji(img, "👥", (cx - 30 * S, 290 * S), 60 * S)
-    d.text((cx, 430 * S), "공유방으로 같이", font=f(26, True), fill=INK, anchor="mm")
-    d.text((cx, 478 * S), "가족·친구와 공유방을 만들어 할 일을 나눠요.", font=f(15), fill=SUB, anchor="mm")
-    d.text((cx, 504 * S), "누가 끝냈는지 바로 알 수 있어요.", font=f(15), fill=SUB, anchor="mm")
-    # 페이지 닷
-    for i in range(3):
-        c = PURPLE if i == 1 else (210, 210, 218)
-        dx = cx - 16 * S + i * 16 * S
-        d.ellipse((dx - 4 * S, 560 * S, dx + 4 * S, 568 * S), fill=c)
-    # 버튼
-    rounded(d, (40 * S, 700 * S, W - 40 * S, 750 * S), 14 * S, fill=BLUE)
-    d.text((cx, 725 * S), "다음", font=f(17, True), fill=(255, 255, 255), anchor="mm")
-    d.text((cx, 775 * S), "건너뛰기", font=f(14), fill=SUB, anchor="mm")
-    img.save(os.path.join(OUT, "05_onboarding.png"))
-
-# ---------------- 6. Space Detail ----------------
-def space_detail():
-    img, d = base()
-    navbar(d, "우리집", left="‹ 공유방")
-    y = 100 * S
-    rounded(d, (16 * S, y, W - 16 * S, y + 110 * S), 12 * S, fill=CARD)
-    d.text((32 * S, y + 16 * S), "공유방 이름", font=f(12), fill=SUB)
-    d.text((32 * S, y + 36 * S), "우리집", font=f(17, True), fill=INK)
-    d.line([(32 * S, y + 70 * S), (W - 32 * S, y + 70 * S)], fill=LINE, width=S)
-    palette = [(94, 92, 230), (255, 107, 107), (78, 205, 196), (69, 183, 209), (150, 206, 180), (255, 234, 167)]
-    px = 36 * S
-    for i, c in enumerate(palette):
-        d.ellipse((px, y + 82 * S, px + 22 * S, y + 104 * S), fill=c)
-        if i == 1:
-            d.line([(px + 6 * S, y + 93 * S), (px + 10 * S, y + 98 * S), (px + 17 * S, y + 87 * S)], fill=(255, 255, 255), width=2 * S)
-        px += 32 * S
-    y += 130 * S
-    d.text((28 * S, y), "멤버", font=f(12, True), fill=SUB)
-    y += 24 * S
-    members = [("나", "소유자", False), ("민지", "멤버", False), ("지호", "멤버", True)]
-    rounded(d, (16 * S, y, W - 16 * S, y + 56 * S * len(members) + 48 * S), 12 * S, fill=CARD)
-    for i, (name, role, pending) in enumerate(members):
-        ry = y + i * 56 * S
-        d.ellipse((34 * S, ry + 14 * S, 62 * S, ry + 42 * S), fill=(210, 212, 220))
-        d.text((74 * S, ry + 14 * S), name, font=f(15), fill=INK)
-        d.text((74 * S, ry + 36 * S), role, font=f(11), fill=SUB)
-        if pending:
-            rounded(d, (W - 90 * S, ry + 16 * S, W - 28 * S, ry + 40 * S), 10 * S, fill=(255, 247, 214))
-            d.text((W - 59 * S, ry + 20 * S), "대기 중", font=f(11), fill=ORANGE, anchor="mm")
-        d.line([(34 * S, ry + 56 * S), (W - 16 * S, ry + 56 * S)], fill=LINE, width=S)
-    iy = y + 56 * S * len(members)
-    d.text((34 * S, iy + 14 * S), "＋ 사람 초대하기", font=f(15), fill=BLUE)
-    y += 56 * S * len(members) + 48 * S + 24 * S
-    rounded(d, (16 * S, y, W - 16 * S, y + 48 * S), 12 * S, fill=CARD)
-    d.text((34 * S, y + 15 * S), "🗑 공유방 삭제", font=f(15), fill=RED)
-    img.save(os.path.join(OUT, "06_space_detail.png"))
-
-# ---------------- 7. Reaction picker ----------------
-def reaction():
-    img, d = base()
-    navbar(d, "투두", left="≣", right_icons=["+"])
-    y = 160 * S
-    rounded(d, (16 * S, y, W - 16 * S, y + 76 * S), 14 * S, fill=CARD)
-    cx = 40 * S
-    d.ellipse((cx - 11 * S, y + 22 * S, cx + 11 * S, y + 44 * S), fill=GREEN)
-    d.line([(cx - 5 * S, y + 33 * S), (cx - 1 * S, y + 38 * S), (cx + 6 * S, y + 27 * S)], fill=(255, 255, 255), width=2 * S)
-    d.text((84 * S, y + 26 * S), "설거지", font=f(16), fill=SUB)
-    d.text((W - 36 * S, y + 26 * S), "민지", font=f(13), fill=SUB, anchor="rm")
-    # 반응 피커 버블
-    by = y + 96 * S
-    bw = 300 * S
-    bx = (W - bw) / 2
-    rounded(d, (bx, by, bx + bw, by + 56 * S), 28 * S, fill=(255, 255, 255), outline=LINE, width=S)
-    emojis = ["👍", "❤️", "🎉", "💪", "😂", "🙏"]
-    ex = bx + 18 * S
-    for ch in emojis:
-        if not paste_emoji(img, ch, (ex, by + 14 * S), 30 * S):
-            d.text((ex, by + 14 * S), "•", font=f(22), fill=INK)
-        ex += 46 * S
-    d.text((W/2, by + 88 * S), "완료된 공유 할 일을 길게 눌러 반응", font=f(12), fill=SUB, anchor="mm")
-    tabbar(d, 0)
-    img.save(os.path.join(OUT, "07_reaction.png"))
-
-# ---------------- 8. Notification settings ----------------
-def notif_settings():
-    img, d = base()
-    navbar(d, "알림", left="‹ 설정")
-    y = 100 * S
-    d.text((28 * S, y), "알림 종류", font=f(12, True), fill=SUB)
-    y += 24 * S
-    toggles = [("마감 알림", True), ("연계 해제 (이제 할 수 있어요)", True),
-               ("공유방 완료 알림", True), ("콕 찌르기", True), ("반응 알림", False)]
-    rounded(d, (16 * S, y, W - 16 * S, y + 50 * S * len(toggles)), 12 * S, fill=CARD)
-    for i, (label, on) in enumerate(toggles):
-        ry = y + i * 50 * S
-        d.text((32 * S, ry + 16 * S), label, font=f(14), fill=INK)
-        tc = GREEN if on else (200, 202, 210)
-        rounded(d, (W - 76 * S, ry + 12 * S, W - 32 * S, ry + 36 * S), 12 * S, fill=tc)
-        knob = (W - 54 * S) if on else (W - 74 * S)
-        d.ellipse((knob, ry + 14 * S, knob + 20 * S, ry + 34 * S), fill=(255, 255, 255))
-        if i < len(toggles) - 1:
-            d.line([(32 * S, ry + 50 * S), (W - 16 * S, ry + 50 * S)], fill=LINE, width=S)
-    y += 50 * S * len(toggles) + 24 * S
-    d.text((28 * S, y), "방해 금지", font=f(12, True), fill=SUB)
-    y += 24 * S
-    rounded(d, (16 * S, y, W - 16 * S, y + 150 * S), 12 * S, fill=CARD)
-    d.text((32 * S, y + 16 * S), "방해 금지 시간", font=f(14), fill=INK)
-    rounded(d, (W - 76 * S, y + 12 * S, W - 32 * S, y + 36 * S), 12 * S, fill=GREEN)
-    d.ellipse((W - 54 * S, y + 14 * S, W - 34 * S, y + 34 * S), fill=(255, 255, 255))
-    d.line([(32 * S, y + 50 * S), (W - 32 * S, y + 50 * S)], fill=LINE, width=S)
-    d.text((32 * S, y + 62 * S), "시작", font=f(14), fill=INK)
-    d.text((W - 32 * S, y + 62 * S), "22시", font=f(14), fill=SUB, anchor="rm")
-    d.line([(32 * S, y + 96 * S), (W - 32 * S, y + 96 * S)], fill=LINE, width=S)
-    d.text((32 * S, y + 108 * S), "종료", font=f(14), fill=INK)
-    d.text((W - 32 * S, y + 108 * S), "8시", font=f(14), fill=SUB, anchor="rm")
-    y += 150 * S + 10 * S
-    d.text((28 * S, y), "자정을 넘는 구간(22시~8시)도 설정할 수 있어요", font=f(11), fill=SUB)
-    img.save(os.path.join(OUT, "08_notif_settings.png"))
+# ---- 손그림 잉크 헬퍼 ----
 
 def seeded_rng(seed):
-    """씨앗 기반 LCG 난수 생성기"""
     state = (seed * 2654435761) & 0xFFFFFFFFFFFFFFFF
     state = (state * 6364136223846793005 + 1442695040888963407) & 0xFFFFFFFFFFFFFFFF
     state = (state * 6364136223846793005 + 1442695040888963407) & 0xFFFFFFFFFFFFFFFF
@@ -416,28 +116,24 @@ def seeded_rng(seed):
     return next_val
 
 def blend(c1, c2, t):
-    """두 RGB 색상을 t(0~1) 비율로 섞기"""
     return tuple(int(c1[i]*(1-t) + c2[i]*t) for i in range(3))
 
 def draw_ink_line(d, y_base, width, seed, thickness=1.4, alpha=0.22):
-    """굵고 울렁이는 잉크 줄 — 흰 종이 + 검정 잉크 스타일"""
     rng = seeded_rng(seed)
     a = alpha + rng() * 0.10
     lw = max(2, int((thickness + rng() * 0.6) * S))
     ink = blend(SK_PAPER, SK_INK, a)
-
     seg_w = 22 * S
     segs = int(width / seg_w) + 2
     pts = []
     for s in range(segs):
         x = s * seg_w
-        dy = (rng() * 2 - 1) * 1.8 * S   # 더 뚜렷한 파형
+        dy = (rng() * 2 - 1) * 1.8 * S
         pts.append((x, y_base + dy))
     for i in range(len(pts) - 1):
         d.line([pts[i], pts[i+1]], fill=ink, width=lw)
 
 def draw_wobbly_square(d, x, y, size, seed, done=False, locked=False):
-    """삐뚤빼뚤한 사각형 체크박스 (이미지 참고 스타일)"""
     rng = seeded_rng(seed)
     j = lambda mag=1.5: (rng() * 2 - 1) * mag * S
     s = size
@@ -447,7 +143,6 @@ def draw_wobbly_square(d, x, y, size, seed, done=False, locked=False):
     bl = (x + j(1.0),     y + s + j(1.0))
     col = SK_FADE if (done or locked) else SK_INK
     lw  = max(2, int((1.8 + rng() * 0.6) * S))
-    # 4변 그리기 (각 변에 중간 흔들림 점 추가)
     def mid(a, b): return ((a[0]+b[0])/2 + j(0.8), (a[1]+b[1])/2 + j(0.8))
     sides = [(tl, tr), (tr, br), (br, bl), (bl, tl)]
     for a, b in sides:
@@ -455,54 +150,612 @@ def draw_wobbly_square(d, x, y, size, seed, done=False, locked=False):
         d.line([a, m, b], fill=col, width=lw, joint="curve")
 
 def draw_checkmark(d, x, y, size, seed):
-    """씨앗별로 조금씩 다른 체크 모양"""
     rng = seeded_rng(seed + 9999)
     style = int(rng() * 4)
     j = lambda: (rng() * 2 - 1) * 1.8 * S
     s = size
-    cx, cy = x + s/2, y + s/2
     if style == 0:
-        p1 = (x + s*0.18 + j(), y + s*0.52 + j())
-        p2 = (x + s*0.42 + j(), y + s*0.74 + j())
-        p3 = (x + s*0.82 + j(), y + s*0.26 + j())
+        p1 = (x+s*0.18+j(), y+s*0.52+j()); p2 = (x+s*0.42+j(), y+s*0.74+j()); p3 = (x+s*0.82+j(), y+s*0.26+j())
     elif style == 1:
-        p1 = (x + s*0.16 + j(), y + s*0.55 + j())
-        p2 = (x + s*0.40 + j(), y + s*0.72 + j())
-        p3 = (x + s*0.84 + j(), y + s*0.24 + j())
+        p1 = (x+s*0.16+j(), y+s*0.55+j()); p2 = (x+s*0.40+j(), y+s*0.72+j()); p3 = (x+s*0.84+j(), y+s*0.24+j())
     elif style == 2:
-        p1 = (x + s*0.20 + j(), y + s*0.48 + j())
-        p2 = (x + s*0.38 + j(), y + s*0.70 + j())
-        p3 = (x + s*0.80 + j(), y + s*0.22 + j())
+        p1 = (x+s*0.20+j(), y+s*0.48+j()); p2 = (x+s*0.38+j(), y+s*0.70+j()); p3 = (x+s*0.80+j(), y+s*0.22+j())
     else:
-        p1 = (x + s*0.22 + j(), y + s*0.50 + j())
-        p2 = (x + s*0.42 + j(), y + s*0.68 + j())
-        p3 = (x + s*0.80 + j(), y + s*0.28 + j())
+        p1 = (x+s*0.22+j(), y+s*0.50+j()); p2 = (x+s*0.42+j(), y+s*0.68+j()); p3 = (x+s*0.80+j(), y+s*0.28+j())
     lw = max(2, int((2.2 + rng() * 0.4) * S))
     d.line([p1, p2, p3], fill=SK_INK, width=lw, joint="curve")
 
-
-def sketch_todo_list():
-    """손그림 노트패드 감성 투두 리스트 — 흰 종이 + 검정 잉크"""
+# ---------------- 1. Todo List ----------------
+def sk_base():
+    """새 스타일 베이스 — 흰 종이 + 줄선"""
     img = Image.new("RGB", (W, H), SK_PAPER)
     d = ImageDraw.Draw(img)
-
-    # 전체 배경에 굵고 울렁이는 줄 (참고 이미지처럼 뚜렷하게)
     for i in range(50):
-        y_base = (52 + i * 44) * S
-        draw_ink_line(d, y_base, W, seed=i * 137 + 17, thickness=1.4, alpha=0.18)
-
-    # 상태바
+        draw_ink_line(d, (52 + i * 44) * S, W, seed=i*137+17, thickness=1.3, alpha=0.16)
     d.text((20*S, 14*S), "9:41", font=f(14,True), fill=SK_INK)
     d.text((W-70*S, 14*S), "▮▮▮ ▮", font=f(12), fill=SK_INK)
+    return img, d
 
-    # 네비바 — 흰 종이 위에 잉크로 쓴 제목
-    d.rectangle([(0, 0), (W, 90*S)], fill=SK_PAPER)
-    draw_ink_line(d, 90*S, W, seed=999, thickness=2.0, alpha=0.35)
-    d.text((W/2, 62*S), "투두", font=f(20,True), fill=SK_INK, anchor="mm")
-    d.text((20*S, 62*S), "≡", font=f(22), fill=SK_INK, anchor="lm")
-    d.text((W-24*S, 62*S), "+", font=f(22,True), fill=SK_INK, anchor="rm")
+def sk_navbar(d, title, left=None, right=None):
+    d.rectangle([(0,0),(W,90*S)], fill=SK_PAPER)
+    draw_ink_line(d, 90*S, W, seed=9001, thickness=2.0, alpha=0.35)
+    d.text((W/2, 62*S), title, font=f(19,True), fill=SK_INK, anchor="mm")
+    if left:
+        d.text((20*S, 62*S), left, font=f(16), fill=SK_INK, anchor="lm")
+    if right:
+        d.text((W-20*S, 62*S), right, font=f(20,True), fill=SK_INK, anchor="rm")
 
-    # (seed_b, status, title, date_str, badge_str, done)
+def sk_tabbar(d, active=0):
+    d.rectangle([(0, H-80*S),(W,H)], fill=SK_PAPER)
+    draw_ink_line(d, H-80*S, W, seed=8888, thickness=2.0, alpha=0.35)
+    items = [("☐","투두"),("▦","캘린더"),("◎","공유방"),("▤","템플릿"),("⚙","설정")]
+    for i,(ic,lb) in enumerate(items):
+        cx = int(W*(i+0.5)/5)
+        col = SK_INK if i==active else SK_SOFT
+        fw = True if i==active else False
+        d.text((cx, H-52*S), ic, font=f(19,fw), fill=col, anchor="mm")
+        d.text((cx, H-28*S), lb, font=f(10,fw), fill=col, anchor="mm")
+
+def sk_section_header(d, text, y):
+    d.text((24*S, y), text, font=f(11,True), fill=SK_SOFT)
+
+def sk_divider(d, y, x0=20, x1=None):
+    draw_ink_line(d, y*S, W if x1 is None else (x1-x0)*S, seed=int(y), thickness=0.9, alpha=0.13)
+
+def sk_row_checkbox(d, x, y, size, seed, done=False, locked=False):
+    draw_wobbly_square(d, x, y, size, seed, done=done, locked=locked)
+    if done:
+        draw_checkmark(d, x, y, size, seed)
+    elif locked:
+        m = int(size*0.28)
+        xi, yi = int(x), int(y)
+        sz = int(size)
+        d.line([(xi+m,yi+m),(xi+sz-m,yi+sz-m)], fill=SK_FADE, width=max(1,int(1.5*S)))
+        d.line([(xi+sz-m,yi+m),(xi+m,yi+sz-m)], fill=SK_FADE, width=max(1,int(1.5*S)))
+
+# 잉크 토글 (흑백 스타일)
+def sk_toggle(d, x, y, on=True):
+    w, h = int(46*S), int(26*S)
+    col = SK_INK if on else SK_FADE
+    rng = seeded_rng(int(x)+int(y))
+    j = lambda: (rng()*2-1)*0.8*S
+    # 삐뚤한 pill
+    d.rounded_rectangle([x, y, x+w, y+h], radius=h//2, fill=col)
+    kx = x+w-h//2-2 if on else x+h//2+2
+    d.ellipse([kx-h//2+3, y+3, kx+h//2-3, y+h-3], fill=SK_PAPER)
+
+# ---------------- 1. Todo List ----------------
+def todo_list():
+    img, d = sk_base()
+    sk_navbar(d, "투두", right="+")
+    y = 102 * S
+    rows = [
+        (1001, False, "장보기",       "오늘",  None,      False),
+        (2002, True,  "요리하기",      None,    None,      False),
+        (3003, False, "분리수거",      "내일",  None,      False),
+        (4004, False, "운동 30분",     "오늘",  "↺ 매일", False),
+        (5005, False, "팀 미팅 참석",  "어제",  None,      True),
+    ]
+    cb = int(20*S); row_h = int(56*S)
+    for seed, locked, title, date, badge, done in rows:
+        cy2 = int(y + row_h//2)
+        if done:
+            d.rectangle([(0,y),(W,y+row_h)], fill=blend(SK_PAPER,SK_INK,0.04))
+        sk_row_checkbox(d, int(20*S), int(y+(row_h-cb)//2), cb, seed, done=done, locked=locked)
+        tx = int(52*S); ty = int(y+row_h//2-9*S)
+        col = SK_FADE if (done or locked) else SK_INK
+        d.text((tx, ty), title, font=f(15, not done and not locked), fill=col)
+        if done:
+            tw = len(title)*8*S
+            d.line([(tx, ty+10*S),(tx+tw, ty+10*S)], fill=SK_FADE, width=max(1,int(S)))
+        by2 = int(y+row_h//2+10*S)
+        bx = tx
+        if date:
+            d.text((bx, by2), date, font=f(10), fill=SK_SOFT)
+            bx += int((len(date)*6+8)*S)
+        if badge:
+            d.text((bx, by2), badge, font=f(10), fill=SK_SOFT)
+        draw_ink_line(d, y+row_h, W, seed=seed+1, thickness=0.9, alpha=0.12)
+        y += row_h
+
+    y += 8*S
+    sk_section_header(d, "완료됨  ·  최근 7일", y)
+    sk_tabbar(d, 0)
+    img.save(os.path.join(OUT, "01_todo_list.png"))
+
+# ---------------- 2. Todo Detail ----------------
+def todo_detail():
+    img, d = sk_base()
+    sk_navbar(d, "할 일", left="‹")
+    y = 102 * S
+
+    def ink_section(lbl, h):
+        nonlocal y
+        if lbl:
+            sk_section_header(d, lbl, y)
+            y += 22*S
+        draw_ink_line(d, y, W, seed=int(y), thickness=1.8, alpha=0.32)
+        y += int(h*S)
+        draw_ink_line(d, y, W, seed=int(y)+1, thickness=1.8, alpha=0.32)
+        y += 20*S
+
+    # 제목
+    d.text((24*S, y+10*S), "요리하기", font=f(20,True), fill=SK_INK)
+    draw_ink_line(d, y+44*S, W, seed=101, thickness=1.6, alpha=0.28)
+    d.text((24*S, y+52*S), "재료 손질부터 시작", font=f(14), fill=SK_SOFT)
+    y += 88*S
+
+    # 날짜
+    sk_section_header(d, "마감", y); y += 22*S
+    d.text((24*S, y+10*S), "날짜 지정", font=f(14), fill=SK_INK)
+    sk_toggle(d, int(W-70*S), int(y+8*S), on=True)
+    draw_ink_line(d, y+42*S, W, seed=201, thickness=1.0, alpha=0.18)
+    d.text((24*S, y+52*S), "마감일", font=f(14), fill=SK_INK)
+    d.text((W-24*S, y+52*S), "6월 25일", font=f(14), fill=SK_INK, anchor="rm")
+    y += 90*S
+
+    # 반복
+    sk_section_header(d, "반복", y); y += 22*S
+    d.text((24*S, y+12*S), "↻ 반복", font=f(14), fill=SK_INK)
+    d.text((W-24*S, y+12*S), "매주 월·수·금", font=f(14), fill=SK_SOFT, anchor="rm")
+    draw_ink_line(d, y+42*S, W, seed=301, thickness=1.0, alpha=0.18)
+    y += 60*S
+
+    # 선행 조건
+    sk_section_header(d, "이 일을 하기 전에", y); y += 22*S
+    draw_ink_line(d, y, W, seed=401, thickness=1.8, alpha=0.32)
+    y += 10*S
+    seed_p = 6001
+    draw_wobbly_square(d, int(24*S), int(y+6*S), int(20*S), seed_p, done=True)
+    draw_checkmark(d, int(24*S), int(y+6*S), int(20*S), seed_p)
+    d.text((int(54*S), int(y+8*S)), "장보기", font=f(14), fill=SK_FADE)
+    draw_ink_line(d, y+40*S, W, seed=402, thickness=0.9, alpha=0.14)
+    y += 50*S
+    d.text((24*S, y+10*S), "+ 선행 조건 추가", font=f(14), fill=SK_INK)
+    draw_ink_line(d, y+40*S, W, seed=403, thickness=1.8, alpha=0.32)
+    y += 55*S
+    d.text((24*S, y), "선행 조건이 완료되면 자동으로 활성화돼요", font=f(11), fill=SK_SOFT)
+
+    img.save(os.path.join(OUT, "02_todo_detail.png"))
+
+# ---------------- 3. Calendar ----------------
+def calendar():
+    img, d = sk_base()
+    sk_navbar(d, "캘린더")
+    y = int(100*S)
+    days = ["일","월","화","수","목","금","토"]
+    nums = [22,23,24,25,26,27,28]
+    cellw = W/7
+    for i in range(7):
+        cx = cellw*(i+0.5)
+        d.text((cx, y+6*S), days[i], font=f(11), fill=SK_SOFT, anchor="mm")
+        sel = (i==2)
+        if sel:
+            # 손그림 원 표시
+            draw_wobbly_square(d, int(cx-12*S), int(y+20*S), int(26*S), 9900+i,
+                               done=False, locked=False)
+        col = SK_INK if sel else SK_SOFT
+        d.text((cx, y+34*S), str(nums[i]), font=f(14,sel), fill=col, anchor="mm")
+        # 점
+        if i in [1,2,3,5]:
+            d.ellipse((cx-3*S, y+54*S, cx+3*S, y+60*S), fill=SK_SOFT)
+    y += 76*S
+    draw_ink_line(d, y, W, seed=5001, thickness=2.0, alpha=0.30)
+    y += 14*S
+
+    def feed_row(title, items):
+        nonlocal y
+        sk_section_header(d, title, y); y += 22*S
+        for seed, label, date, overdue in items:
+            cb_y = int(y+(44*S-20*S)//2)
+            sk_row_checkbox(d, int(20*S), cb_y, int(20*S), seed)
+            d.text((int(50*S), int(y+10*S)), label, font=f(14,True), fill=SK_INK)
+            d.text((int(50*S), int(y+30*S)), date, font=f(10), fill=SK_ACCENT if overdue else SK_SOFT)
+            draw_ink_line(d, y+44*S, W, seed=seed+1, thickness=0.9, alpha=0.12)
+            y += 44*S
+        y += 10*S
+
+    feed_row("마감 지남", [(7001,"월세 이체","5월 28일",True)])
+    feed_row("오늘",       [(7002,"장보기","오늘",False),(7003,"운동하기","오늘",False)])
+    feed_row("내일",       [(7004,"분리수거","내일",False)])
+
+    sk_tabbar(d, 1)
+    img.save(os.path.join(OUT, "03_calendar.png"))
+
+# ---------------- 4. Widget ----------------
+def widget():
+    img = Image.new("RGB", (W, H), SK_PAPER)
+    d = ImageDraw.Draw(img)
+    for i in range(50):
+        draw_ink_line(d, (52+i*44)*S, W, seed=i*137+17, thickness=1.3, alpha=0.13)
+    d.text((20*S, 14*S), "9:41", font=f(14,True), fill=SK_INK)
+
+    mx, my = int(24*S), int(160*S)
+    mw, mh = W-48*S, int(230*S)
+    # 손그림 카드
+    d.rectangle([mx, my, mx+mw, my+mh], fill=SK_CARD)
+    # 굵은 테두리
+    rng_w = seeded_rng(42)
+    j = lambda: (rng_w()*2-1)*1.2*S
+    corners = [(mx+j(),my+j()),(mx+mw+j(),my+j()),(mx+mw+j(),my+mh+j()),(mx+j(),my+mh+j())]
+    for i in range(4):
+        a, b = corners[i], corners[(i+1)%4]
+        mid = ((a[0]+b[0])/2+j(), (a[1]+b[1])/2+j())
+        d.line([a,mid,b], fill=SK_INK, width=max(2,int(2.2*S)), joint="curve")
+
+    d.text((mx+20*S, my+16*S), "오늘 할 일", font=f(13,True), fill=SK_SOFT)
+    draw_ink_line(d, my+38*S, mw, seed=5555, thickness=1.5, alpha=0.25)
+    rows_w = [("장보기",False,8001),("요리하기",False,8002),("운동하기",True,8003),("분리수거",False,8004)]
+    ry = my+48*S
+    cb = int(18*S)
+    for title, done, seed in rows_w:
+        sk_row_checkbox(d, int(mx+16*S), int(ry), cb, seed, done=done)
+        d.text((int(mx+46*S), int(ry+1*S)), title, font=f(13), fill=SK_FADE if done else SK_INK)
+        ry += int(40*S)
+
+    d.text((W/2, my+mh+28*S), "todogether · 탭하면 완료", font=f(11), fill=SK_SOFT, anchor="mm")
+    img.save(os.path.join(OUT, "04_widget.png"))
+
+# ---------------- 5. Onboarding ----------------
+def onboarding():
+    img, d = sk_base()
+    # 큰 손그림 일러스트 영역
+    cx = W/2
+    # 스틱 피겨 2명 (참고 이미지 스타일)
+    def stick_person(bx, by, size, seed):
+        rng = seeded_rng(seed)
+        j = lambda m=1.0: (rng()*2-1)*m*S
+        s = size*S
+        # 머리
+        d.ellipse([bx-s*0.18+j(), by+j(), bx+s*0.18+j(), by+s*0.36+j()],
+                  outline=SK_INK, width=max(2,int(2.0*S)))
+        # 몸
+        d.line([(bx+j(), by+s*0.36+j()), (bx+j(), by+s*0.72+j())],
+               fill=SK_INK, width=max(2,int(2.0*S)))
+        # 팔
+        d.line([(bx-s*0.22+j(), by+s*0.5+j()), (bx+s*0.22+j(), by+s*0.5+j())],
+               fill=SK_INK, width=max(2,int(1.8*S)))
+        # 다리
+        d.line([(bx+j(), by+s*0.72+j()), (bx-s*0.18+j(), by+s+j())],
+               fill=SK_INK, width=max(2,int(1.8*S)))
+        d.line([(bx+j(), by+s*0.72+j()), (bx+s*0.18+j(), by+s+j())],
+               fill=SK_INK, width=max(2,int(1.8*S)))
+
+    stick_person(int(W/2-40*S), int(200*S), 70, 3001)
+    stick_person(int(W/2+40*S), int(200*S), 70, 3002)
+    # 하트
+    d.text((int(W/2), int(280*S)), "♡", font=f(28,True), fill=SK_INK, anchor="mm")
+
+    d.text((cx, 370*S), "함께 만드는 할 일", font=f(22,True), fill=SK_INK, anchor="mm")
+    d.text((cx, 408*S), "가족·친구와 공유방을 만들어", font=f(14), fill=SK_SOFT, anchor="mm")
+    d.text((cx, 430*S), "할 일을 나눠요.", font=f(14), fill=SK_SOFT, anchor="mm")
+
+    # 페이지 닷 (삐뚤한 원)
+    for i in range(3):
+        dcx = int(cx - 16*S + i*16*S)
+        if i == 1:
+            draw_wobbly_square(d, dcx-5*S, int(500*S), int(10*S), 4000+i)
+        else:
+            d.ellipse([dcx-4*S, 501*S, dcx+4*S, 509*S], outline=SK_SOFT, width=max(1,int(1.5*S)))
+
+    # 버튼 (손그림 사각형)
+    bx, by2 = int(40*S), int(640*S)
+    bw, bh = W-80*S, int(52*S)
+    rng_b = seeded_rng(5001)
+    j2 = lambda: (rng_b()*2-1)*1.5*S
+    corners_b = [(bx+j2(),by2+j2()),(bx+bw+j2(),by2+j2()),
+                 (bx+bw+j2(),by2+bh+j2()),(bx+j2(),by2+bh+j2())]
+    d.polygon(corners_b, fill=SK_INK)
+    d.text((cx, by2+bh//2), "시작하기", font=f(17,True), fill=SK_PAPER, anchor="mm")
+    d.text((cx, by2+bh+30*S), "로그인 없이 시작", font=f(13), fill=SK_SOFT, anchor="mm")
+    img.save(os.path.join(OUT, "05_onboarding.png"))
+
+# ---------------- 6. Space Detail ----------------
+def space_detail():
+    img, d = sk_base()
+    sk_navbar(d, "우리집", left="‹")
+    y = 102*S
+
+    d.text((24*S, y+10*S), "우리집", font=f(20,True), fill=SK_INK)
+    draw_ink_line(d, y+40*S, W, seed=6001, thickness=1.8, alpha=0.30)
+    y += 56*S
+
+    sk_section_header(d, "멤버", y); y += 22*S
+    members = [("나","소유자",6101), ("민지","멤버",6102), ("지호","멤버",6103)]
+    for name, role, seed in members:
+        # 아바타 손그림 원
+        draw_wobbly_square(d, int(20*S), int(y+8*S), int(32*S), seed)
+        d.text((int(62*S), int(y+10*S)), name, font=f(14,True), fill=SK_INK)
+        d.text((int(62*S), int(y+28*S)), role, font=f(11), fill=SK_SOFT)
+        draw_ink_line(d, y+48*S, W, seed=seed+1, thickness=0.9, alpha=0.12)
+        y += 50*S
+    d.text((24*S, y+12*S), "+ 사람 초대하기", font=f(14), fill=SK_INK)
+    draw_ink_line(d, y+44*S, W, seed=6199, thickness=1.8, alpha=0.28)
+    y += 60*S
+
+    sk_section_header(d, "초대 코드", y); y += 22*S
+    draw_ink_line(d, y, W, seed=6200, thickness=1.8, alpha=0.30)
+    y += 12*S
+    d.text((28*S, y+8*S), "HJK", font=f(30,True), fill=SK_INK)
+    d.text((int(W/2), y+10*S), "—", font=f(24), fill=SK_SOFT, anchor="mm")
+    d.text((W/2+20*S, y+8*S), "9NP", font=f(30,True), fill=SK_INK)
+    d.text((W-28*S, y+16*S), "⧉", font=f(20), fill=SK_INK, anchor="rm")
+    y += 52*S
+    d.text((24*S, y), "이 코드를 멤버에게 알려주세요.", font=f(12), fill=SK_SOFT)
+    draw_ink_line(d, y+36*S, W, seed=6201, thickness=1.8, alpha=0.28)
+    y += 48*S
+
+    # 삭제 (손그림)
+    d.text((24*S, y+14*S), "공유방 삭제", font=f(14), fill=SK_SOFT)
+    img.save(os.path.join(OUT, "06_space_detail.png"))
+
+# ---------------- 7. Reaction ----------------
+def reaction():
+    img, d = sk_base()
+    sk_navbar(d, "투두", right="+")
+    y = int(150*S)
+
+    seed_r = 7001
+    cb = int(20*S)
+    row_h = int(56*S)
+    draw_wobbly_square(d, int(20*S), int(y+(row_h-cb)//2), cb, seed_r, done=True)
+    draw_checkmark(d, int(20*S), int(y+(row_h-cb)//2), cb, seed_r)
+    d.text((int(52*S), int(y+14*S)), "설거지", font=f(15), fill=SK_FADE)
+    d.text((W-24*S, int(y+14*S)), "민지", font=f(12), fill=SK_SOFT, anchor="rm")
+    draw_ink_line(d, y+row_h, W, seed=7002, thickness=0.9, alpha=0.14)
+    y += row_h + 16*S
+
+    # 반응 버블 (손그림 pill)
+    bh = int(58*S); bw = int(320*S); bx = int((W-bw)//2)
+    rng_r = seeded_rng(7003)
+    jr = lambda: (rng_r()*2-1)*1.2*S
+    pts = [(bx+jr(),y+jr()),(bx+bw+jr(),y+jr()),
+           (bx+bw+jr(),y+bh+jr()),(bx+jr(),y+bh+jr())]
+    d.polygon(pts, fill=SK_CARD)
+    draw_ink_line(d, y, bw, seed=7010, thickness=1.8, alpha=0.30)
+    draw_ink_line(d, y+bh, bw, seed=7011, thickness=1.8, alpha=0.30)
+
+    emojis = ["👍","❤️","🎉","💪","😂","🙏"]
+    ex = bx + 14*S
+    for ch in emojis:
+        if not paste_emoji(img, ch, (ex, y+14*S), int(30*S)):
+            d.text((ex+15*S, y+29*S), ch, font=f(18), fill=SK_INK, anchor="mm")
+        ex += int(48*S)
+
+    d.text((W//2, int(y+bh+30*S)), "완료된 공유 할 일을 길게 눌러 반응", font=f(12), fill=SK_SOFT, anchor="mm")
+    sk_tabbar(d, 0)
+    img.save(os.path.join(OUT, "07_reaction.png"))
+
+# ---------------- 8. Notif Settings ----------------
+def notif_settings():
+    img, d = sk_base()
+    sk_navbar(d, "알림", left="‹")
+    y = 102*S
+    sk_section_header(d, "알림 종류", y); y += 22*S
+    draw_ink_line(d, y, W, seed=8001, thickness=1.8, alpha=0.30)
+    toggles = [("마감 알림",True),("연계 해제",True),("공유방 완료",True),("콕 찌르기",True),("반응 알림",False)]
+    for label, on in toggles:
+        y += 6*S
+        d.text((24*S, y+8*S), label, font=f(14), fill=SK_INK)
+        sk_toggle(d, int(W-70*S), int(y+6*S), on=on)
+        draw_ink_line(d, y+38*S, W, seed=int(y), thickness=0.9, alpha=0.12)
+        y += 44*S
+    draw_ink_line(d, y, W, seed=8099, thickness=1.8, alpha=0.30)
+    y += 20*S
+
+    sk_section_header(d, "방해 금지", y); y += 22*S
+    draw_ink_line(d, y, W, seed=8101, thickness=1.8, alpha=0.30)
+    y += 10*S
+    d.text((24*S, y+8*S), "방해 금지 시간", font=f(14), fill=SK_INK)
+    sk_toggle(d, int(W-70*S), int(y+6*S), on=True)
+    draw_ink_line(d, y+38*S, W, seed=8102, thickness=0.9, alpha=0.12)
+    y += 48*S
+    d.text((24*S, y+8*S), "시작", font=f(14), fill=SK_INK)
+    d.text((W-24*S, y+8*S), "22시", font=f(14), fill=SK_SOFT, anchor="rm")
+    draw_ink_line(d, y+38*S, W, seed=8103, thickness=0.9, alpha=0.12)
+    y += 48*S
+    d.text((24*S, y+8*S), "종료", font=f(14), fill=SK_INK)
+    d.text((W-24*S, y+8*S), "8시", font=f(14), fill=SK_SOFT, anchor="rm")
+    draw_ink_line(d, y+38*S, W, seed=8104, thickness=1.8, alpha=0.28)
+    y += 52*S
+    d.text((24*S, y), "자정을 넘는 구간(22시~8시)도 설정할 수 있어요", font=f(11), fill=SK_SOFT)
+    img.save(os.path.join(OUT, "08_notif_settings.png"))
+
+# ---------------- 9. Settings ----------------
+def settings():
+    img, d = sk_base()
+    sk_navbar(d, "설정")
+    y = 102*S
+
+    # 계정
+    sk_section_header(d, "계정", y); y += 22*S
+    draw_ink_line(d, y, W, seed=9101, thickness=1.8, alpha=0.30)
+    y += 10*S
+    # 아바타 손그림
+    draw_wobbly_square(d, int(20*S), int(y+4*S), int(36*S), 9001)
+    d.text((int(66*S), int(y+6*S)), "김민준", font=f(15,True), fill=SK_INK)
+    d.text((int(66*S), int(y+26*S)), "Apple로 로그인됨", font=f(11), fill=SK_SOFT)
+    draw_ink_line(d, y+50*S, W, seed=9102, thickness=1.8, alpha=0.28)
+    y += 62*S
+
+    sk_section_header(d, "보안", y); y += 22*S
+    draw_ink_line(d, y, W, seed=9201, thickness=1.8, alpha=0.30)
+    y += 10*S
+    d.text((24*S, y+8*S), "Face ID / Touch ID 잠금", font=f(14), fill=SK_INK)
+    sk_toggle(d, int(W-70*S), int(y+6*S), on=True)
+    draw_ink_line(d, y+38*S, W, seed=9202, thickness=0.9, alpha=0.12)
+    y += 48*S
+    d.text((24*S, y), "앱 실행 시 생체 인증이 필요합니다.", font=f(11), fill=SK_SOFT)
+    draw_ink_line(d, y+20*S, W, seed=9203, thickness=1.8, alpha=0.28)
+    y += 36*S
+
+    sk_section_header(d, "알림", y); y += 22*S
+    draw_ink_line(d, y, W, seed=9301, thickness=1.8, alpha=0.30)
+    y += 10*S
+    d.text((24*S, y+8*S), "알림 설정", font=f(14), fill=SK_INK)
+    d.text((W-24*S, y+10*S), "›", font=f(18), fill=SK_SOFT, anchor="rm")
+    draw_ink_line(d, y+38*S, W, seed=9302, thickness=1.8, alpha=0.28)
+    y += 54*S
+
+    sk_section_header(d, "앱 정보", y); y += 22*S
+    draw_ink_line(d, y, W, seed=9401, thickness=1.8, alpha=0.30)
+    y += 10*S
+    d.text((24*S, y+8*S), "버전", font=f(14), fill=SK_INK)
+    d.text((W-24*S, y+10*S), "1.0.0", font=f(14), fill=SK_SOFT, anchor="rm")
+    draw_ink_line(d, y+38*S, W, seed=9402, thickness=1.8, alpha=0.28)
+
+    sk_tabbar(d, 4)
+    img.save(os.path.join(OUT, "09_settings.png"))
+
+# ---------------- 10. Todo Claiming ----------------
+def todo_list_claiming():
+    img, d = sk_base()
+    sk_navbar(d, "우리집", left="‹", right="+")
+    y = 102*S
+    rows = [
+        (1001, False, "설거지 하기",   "오늘",  False, False),
+        (2002, False, "쓰레기 버리기", "내일",  True,  False),   # 미배정
+        (3003, True,  "요리하기",      None,    False, False),
+    ]
+    cb = int(20*S); row_h = int(56*S)
+    for idx, (seed, locked, title, date, unassigned, done) in enumerate(rows):
+        if idx == 1:
+            # 스와이프된 행 (오른쪽 액션 노출)
+            d.rectangle([(0,y),(W,y+row_h)], fill=blend(SK_PAPER,SK_INK,0.07))
+            d.text((W-int(60*S), int(y+row_h//2)), "내가\n할게", font=f(12,True),
+                   fill=SK_INK, anchor="mm")
+            sk_row_checkbox(d, int(20*S), int(y+(row_h-cb)//2), cb, seed, locked=locked)
+        else:
+            sk_row_checkbox(d, int(20*S), int(y+(row_h-cb)//2), cb, seed, done=done, locked=locked)
+        col = SK_FADE if locked else SK_INK
+        d.text((int(52*S), int(y+row_h//2-9*S)), title, font=f(15,True), fill=col)
+        by2 = int(y+row_h//2+10*S)
+        if date:
+            d.text((int(52*S), by2), date, font=f(10), fill=SK_SOFT)
+        if unassigned:
+            bx2 = int(52*S + (len(date)*6+10)*S)
+            d.text((bx2, by2), "미배정", font=f(10), fill=SK_INK)
+        draw_ink_line(d, y+row_h, W, seed=seed+1, thickness=0.9, alpha=0.12)
+        y += row_h
+    sk_tabbar(d, 0)
+    img.save(os.path.join(OUT, "10_todo_claiming.png"))
+
+# ---------------- 11. Add Todo NLP ----------------
+def add_todo_nlp():
+    img, d = sk_base()
+    sk_navbar(d, "새 할 일", left="취소", right="추가")
+    y = 102*S
+    draw_ink_line(d, y, W, seed=1101, thickness=1.8, alpha=0.30)
+    y += 12*S
+    d.text((24*S, y+8*S), "다음주 월요일 팀 미팅", font=f(16), fill=SK_INK)
+    draw_ink_line(d, y+38*S, W, seed=1102, thickness=0.9, alpha=0.14)
+    y += 50*S
+    # 파싱 힌트 (손그림 박스)
+    hx, hy = int(20*S), int(y)
+    hw, hh = W-40*S, int(34*S)
+    rng_h = seeded_rng(1103)
+    jh = lambda: (rng_h()*2-1)*1.0*S
+    d.polygon([(hx+jh(),hy+jh()),(hx+hw+jh(),hy+jh()),
+               (hx+hw+jh(),hy+hh+jh()),(hx+jh(),hy+hh+jh())],
+              fill=blend(SK_PAPER,SK_INK,0.06))
+    d.text((hx+12*S, hy+8*S), "✦ 날짜 인식: 6월 30일 월요일", font=f(12), fill=SK_INK)
+    y += hh + 20*S
+    draw_ink_line(d, y, W, seed=1104, thickness=1.8, alpha=0.30)
+    y += 12*S
+
+    d.text((24*S, y+8*S), "날짜 지정", font=f(14), fill=SK_INK)
+    sk_toggle(d, int(W-70*S), int(y+6*S), on=True)
+    draw_ink_line(d, y+38*S, W, seed=1105, thickness=0.9, alpha=0.14)
+    y += 52*S
+
+    d.text((24*S, y+8*S), "날짜", font=f(14), fill=SK_INK)
+    d.text((W-24*S, y+8*S), "2026년 6월 30일", font=f(14), fill=SK_INK, anchor="rm")
+    draw_ink_line(d, y+38*S, W, seed=1106, thickness=1.8, alpha=0.28)
+    y += 56*S
+
+    d.text((24*S, y+8*S), "반복", font=f(14), fill=SK_INK)
+    d.text((W-24*S, y+8*S), "안 함", font=f(14), fill=SK_SOFT, anchor="rm")
+    draw_ink_line(d, y+38*S, W, seed=1107, thickness=1.8, alpha=0.28)
+
+    img.save(os.path.join(OUT, "11_add_todo_nlp.png"))
+
+# ---------------- 12. Apple Sign In ----------------
+def apple_signin():
+    img, d = sk_base()
+    cx = W/2
+
+    # 손그림 스틱 피겨 + 체크
+    stick_y = int(200*S)
+    rng_a = seeded_rng(1201)
+    j = lambda: (rng_a()*2-1)*1.5*S
+    r = int(30*S)
+    # 머리
+    d.ellipse([cx-r+j(),stick_y+j(),cx+r+j(),stick_y+r*2+j()],
+              outline=SK_INK, width=max(2,int(2.2*S)))
+    # 몸+팔+다리
+    d.line([(cx+j(),stick_y+r*2+j()),(cx+j(),stick_y+r*4+j())], fill=SK_INK, width=max(2,int(2.0*S)))
+    d.line([(cx-r*1.2+j(),stick_y+r*2.8+j()),(cx+r*1.2+j(),stick_y+r*2.8+j())], fill=SK_INK, width=max(2,int(2.0*S)))
+    d.line([(cx+j(),stick_y+r*4+j()),(cx-r*0.9+j(),stick_y+r*5.5+j())], fill=SK_INK, width=max(2,int(2.0*S)))
+    d.line([(cx+j(),stick_y+r*4+j()),(cx+r*0.9+j(),stick_y+r*5.5+j())], fill=SK_INK, width=max(2,int(2.0*S)))
+    # 손그림 하트
+    d.text((cx, int(stick_y+r*6.5)), "♡", font=f(22,True), fill=SK_INK, anchor="mm")
+
+    d.text((cx, int(400*S)), "todogether", font=f(26,True), fill=SK_INK, anchor="mm")
+    d.text((cx, int(436*S)), "함께 만드는 할 일 목록", font=f(14), fill=SK_SOFT, anchor="mm")
+    draw_ink_line(d, int(462*S), W, seed=1202, thickness=1.5, alpha=0.25)
+
+    # Apple 로그인 버튼 (손그림 사각형)
+    by = int(490*S)
+    bw = W - 80*S
+    bh = int(52*S)
+    bx = int(40*S)
+    rng_b = seeded_rng(1203)
+    jb = lambda: (rng_b()*2-1)*1.5*S
+    d.polygon([(bx+jb(),by+jb()),(bx+bw+jb(),by+jb()),
+               (bx+bw+jb(),by+bh+jb()),(bx+jb(),by+bh+jb())], fill=SK_INK)
+    d.text((cx, by+bh//2), "Apple로 로그인", font=f(16,True), fill=SK_PAPER, anchor="mm")
+
+    draw_ink_line(d, int(by+bh+20*S), W, seed=1204, thickness=1.0, alpha=0.18)
+    d.text((cx, int(by+bh+42*S)), "로그인 없이 시작", font=f(14), fill=SK_SOFT, anchor="mm")
+    d.text((cx, H-int(80*S)), "Apple 계정으로 공유방 기능을 이용할 수 있어요.", font=f(11), fill=SK_SOFT, anchor="mm")
+    img.save(os.path.join(OUT, "12_apple_signin.png"))
+
+# ---------------- 13. Invite Code ----------------
+def invite_code():
+    img, d = sk_base()
+    sk_navbar(d, "우리집", left="‹")
+    y = 102*S
+    d.text((24*S, y+10*S), "우리집", font=f(20,True), fill=SK_INK)
+    draw_ink_line(d, y+40*S, W, seed=1301, thickness=1.8, alpha=0.30)
+    y += 58*S
+
+    sk_section_header(d, "멤버", y); y += 22*S
+    draw_ink_line(d, y, W, seed=1302, thickness=1.8, alpha=0.30)
+    y += 10*S
+    for name, role, seed in [("나","소유자",1311),("민지","멤버",1312)]:
+        draw_wobbly_square(d, int(20*S), int(y+6*S), int(28*S), seed)
+        d.text((int(58*S),int(y+8*S)), name, font=f(14,True), fill=SK_INK)
+        d.text((int(58*S),int(y+26*S)), role, font=f(11), fill=SK_SOFT)
+        draw_ink_line(d, y+44*S, W, seed=seed+1, thickness=0.9, alpha=0.12)
+        y += 48*S
+    draw_ink_line(d, y, W, seed=1313, thickness=1.8, alpha=0.28)
+    y += 20*S
+
+    sk_section_header(d, "초대 코드", y); y += 22*S
+    draw_ink_line(d, y, W, seed=1320, thickness=1.8, alpha=0.30)
+    y += 16*S
+    # 코드 크게
+    d.text((32*S, y+6*S), "HJK", font=f(32,True), fill=SK_INK)
+    d.text((int(W/2), y+8*S), "—", font=f(28), fill=SK_SOFT, anchor="mm")
+    d.text((W/2+24*S, y+6*S), "9NP", font=f(32,True), fill=SK_INK)
+    d.text((W-28*S, y+14*S), "⧉", font=f(22), fill=SK_INK, anchor="rm")
+    y += 56*S
+    d.text((24*S, y), "이 코드를 멤버에게 알려주세요.", font=f(12), fill=SK_SOFT)
+    draw_ink_line(d, y+28*S, W, seed=1321, thickness=1.8, alpha=0.28)
+    y += 44*S
+    d.text((24*S, y+12*S), "↑ 초대 링크 공유", font=f(14), fill=SK_INK)
+    draw_ink_line(d, y+44*S, W, seed=1322, thickness=1.8, alpha=0.28)
+    img.save(os.path.join(OUT, "13_invite_code.png"))
     rows = [
         (1001, "available", "장보기",        "오늘",   None,      False),
         (2002, "locked",    "요리하기",       None,     None,      False),
@@ -728,6 +981,6 @@ if __name__ == "__main__":
     todo_list(); todo_detail(); calendar(); widget()
     onboarding(); space_detail(); reaction(); notif_settings()
     settings(); todo_list_claiming(); add_todo_nlp()
-    apple_signin(); invite_code(); sketch_todo_list()
+    apple_signin(); invite_code()
     print("emoji_color:", _emoji_ok)
     print("rendered:", sorted(os.listdir(OUT)))
