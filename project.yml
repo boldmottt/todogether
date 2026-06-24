@@ -46,6 +46,7 @@ targets:
         MARKETING_VERSION: "1.0"
         CURRENT_PROJECT_VERSION: "1"
         CODE_SIGN_STYLE: Automatic
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         # Face ID(앱 잠금)용 권한 설명
         INFOPLIST_KEY_NSFaceIDUsageDescription: "앱 잠금을 해제하는 데 Face ID를 사용합니다."
         # 기본 인터페이스 방향 / 런치스크린은 아래 info에서 처리
