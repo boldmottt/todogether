@@ -25,6 +25,7 @@ public struct RecurrencePickerView: View {
                 presetRow("완료 후 7일", RecurrenceRule(frequency: .afterCompletion, interval: 7))
             }
         }
+        .sketchForm()
         .navigationTitle("반복")
         .navigationBarTitleDisplayMode(.inline)
     }
@@ -39,7 +40,7 @@ public struct RecurrencePickerView: View {
                 Spacer()
                 if isSelected(preset) {
                     Image(systemName: "checkmark")
-                        .foregroundStyle(.blue)
+                        .foregroundStyle(SketchTheme.Color.ink)
                 }
             }
         }

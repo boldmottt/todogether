@@ -65,6 +65,7 @@ public struct ReactionHistoryView: View {
                 }
             }
         }
+        .sketchForm()
         .navigationTitle("반응")
         .navigationBarTitleDisplayMode(.inline)
     }
