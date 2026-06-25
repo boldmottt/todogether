@@ -1,0 +1,13 @@
+.claude/worktrees/
+
+# XcodeGen이 생성하는 산출물 (project.yml로 언제든 재생성)
+*.xcodeproj
+App/Info.plist
+
+# Xcode / SPM 빌드 산출물
+.build/
+build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+.DS_Store
