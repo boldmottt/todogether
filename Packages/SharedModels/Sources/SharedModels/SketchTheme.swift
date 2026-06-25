@@ -34,15 +34,18 @@ public enum SketchTheme {
     public static let fontName     = "Noteworthy"
     public static let fontNameBold = "Noteworthy-Bold"
 
-    public static func font(_ size: CGFloat, bold: Bool = false) -> SwiftUI.Font {
-        .custom(bold ? fontNameBold : fontName, size: size)
+    // relativeTo: 로 Dynamic Type 대응 — 사용자가 글자 크기를 키우면 함께 스케일된다.
+    public static func font(_ size: CGFloat,
+                            bold: Bool = false,
+                            relativeTo textStyle: SwiftUI.Font.TextStyle = .body) -> SwiftUI.Font {
+        .custom(bold ? fontNameBold : fontName, size: size, relativeTo: textStyle)
     }
 
-    public static var title:    SwiftUI.Font { font(20, bold: true) }
-    public static var headline: SwiftUI.Font { font(16, bold: true) }
-    public static var body:     SwiftUI.Font { font(15) }
-    public static var caption:  SwiftUI.Font { font(12) }
-    public static var nano:     SwiftUI.Font { font(10) }
+    public static var title:    SwiftUI.Font { font(20, bold: true, relativeTo: .title) }
+    public static var headline: SwiftUI.Font { font(16, bold: true, relativeTo: .headline) }
+    public static var body:     SwiftUI.Font { font(15, relativeTo: .body) }
+    public static var caption:  SwiftUI.Font { font(12, relativeTo: .caption) }
+    public static var nano:     SwiftUI.Font { font(10, relativeTo: .caption2) }
 }
 
 // MARK: - 결정적 난수 (LCG)
