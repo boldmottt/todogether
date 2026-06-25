@@ -71,6 +71,7 @@ public struct RecurrenceEditorView: View {
                 }
             }
         }
+        .sketchForm()
         .navigationTitle("반복")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {

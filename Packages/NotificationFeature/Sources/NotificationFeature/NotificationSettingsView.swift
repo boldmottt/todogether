@@ -1,4 +1,5 @@
 import SwiftUI
+import SharedModels
 
 // MARK: - 알림 설정 화면 (E3)
 public struct NotificationSettingsView: View {
@@ -43,6 +44,7 @@ public struct NotificationSettingsView: View {
                 Text("자정을 넘는 구간(예: 22시~8시)도 설정할 수 있어요")
             }
         }
+        .sketchForm()
         .navigationTitle("알림")
         .navigationBarTitleDisplayMode(.inline)
     }

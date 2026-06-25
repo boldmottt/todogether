@@ -127,6 +127,7 @@ public struct TemplateDetailView: View {
                 .disabled(items.isEmpty)
             }
         }
+        .sketchForm()
         .navigationTitle("템플릿")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -217,6 +218,7 @@ struct TemplateItemEditorView: View {
                 }
             }
         }
+        .sketchForm()
         .navigationTitle("항목 설정")
         .navigationBarTitleDisplayMode(.inline)
     }
@@ -289,6 +291,7 @@ struct CreateTemplateView: View {
                     Text("항목을 눌러 기준일·선행 항목을 설정하세요")
                 }
             }
+            .sketchForm()
             .navigationTitle("새 템플릿")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -358,6 +361,7 @@ struct InstantiationSheet: View {
                         .foregroundStyle(.secondary)
                 }
             }
+            .sketchForm()
             .navigationTitle(template.name)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

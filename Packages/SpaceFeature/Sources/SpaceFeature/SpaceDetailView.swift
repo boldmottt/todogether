@@ -54,6 +54,7 @@ public struct SpaceDetailView: View {
                 Text("삭제하면 이 공유방의 모든 할 일이 사라져요. 멤버 전원에게서 제거돼요.")
             }
         }
+        .sketchForm()
         .navigationTitle(space.name)
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $showShareSheet) {

@@ -105,6 +105,7 @@ struct CreateSpaceView: View {
                     .padding(.vertical, 4)
                 }
             }
+            .sketchForm()
             .navigationTitle("새 공유방")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

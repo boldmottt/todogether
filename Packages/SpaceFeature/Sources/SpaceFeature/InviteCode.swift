@@ -143,6 +143,7 @@ public struct JoinByCodeView: View {
                     }
                 }
             }
+            .sketchForm()
             .navigationTitle("코드로 참여")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
