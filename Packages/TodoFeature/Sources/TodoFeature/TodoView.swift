@@ -72,14 +72,14 @@ private struct TodoListContent: View {
                                 Button {
                                     ChainManager.complete(todo, context: context)
                                 } label: { Label("완료", systemImage: "checkmark") }
-                                .tint(.green)
+                                .tint(SketchTheme.Color.ink)
                             }
                             // Donetick "claiming": 공유방 미배정 투두 → "내가 할게"
                             if isClaimable(todo) {
                                 Button {
                                     claim(todo)
                                 } label: { Label("내가 할게", systemImage: "person.badge.plus") }
-                                .tint(.blue)
+                                .tint(SketchTheme.Color.ink)
                             }
                             // E2: 콕 찌르기 — 다른 사람이 담당한 투두에만 (자기 자신 방지)
                             if todo.space != nil && todo.assigneeID != nil
@@ -87,7 +87,7 @@ private struct TodoListContent: View {
                                 Button {
                                     nudge(todo)
                                 } label: { Label("콕!", systemImage: "hand.point.up.left.fill") }
-                                .tint(.orange)
+                                .tint(SketchTheme.Color.ink)
                             }
                         }
                         .swipeActions(edge: .trailing) {
@@ -409,7 +409,7 @@ struct AddTodoView: View {
                             systemImage: "sparkles"
                         )
                         .font(SketchTheme.caption)
-                        .foregroundStyle(.blue)
+                        .foregroundStyle(SketchTheme.Color.ink)
                     }
                 }
 
@@ -431,6 +431,7 @@ struct AddTodoView: View {
                     ), displayedComponents: .date)
                 }
             }
+            .sketchForm()
             .navigationTitle("새 할 일")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

@@ -14,7 +14,7 @@ struct TodoRow: View {
         HStack(spacing: 8) {
             Button(intent: ToggleTodoIntent(todoID: todo.id.uuidString)) {
                 Image(systemName: todo.isCompleted ? "checkmark.circle.fill" : "circle")
-                    .foregroundStyle(todo.isCompleted ? .green : .secondary)
+                    .foregroundStyle(todo.isCompleted ? SketchTheme.Color.ink : .secondary)
             }
             .buttonStyle(.plain)
 
@@ -60,7 +60,7 @@ public struct TodoWidgetSmallView: View {
                 Button(intent: ToggleTodoIntent(todoID: todo.id.uuidString)) {
                     Image(systemName: todo.isCompleted ? "checkmark.circle.fill" : "circle")
                         .font(.title2)
-                        .foregroundStyle(todo.isCompleted ? .green : .accentColor)
+                        .foregroundStyle(todo.isCompleted ? SketchTheme.Color.ink : SketchTheme.Color.softInk)
                 }
                 .buttonStyle(.plain)
 

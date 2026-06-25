@@ -56,7 +56,7 @@ public struct TodoDetailView: View {
                 ForEach(prerequisiteTodos) { prereq in
                     HStack {
                         Image(systemName: prereq.isCompleted ? "checkmark.circle.fill" : "circle")
-                            .foregroundStyle(prereq.isCompleted ? .green : .secondary)
+                            .foregroundStyle(prereq.isCompleted ? SketchTheme.Color.ink : .secondary)
                         Text(prereq.title)
                         Spacer()
                     }
@@ -76,6 +76,7 @@ public struct TodoDetailView: View {
                 }
             }
         }
+        .sketchForm()
         .navigationTitle("할 일")
         .navigationBarTitleDisplayMode(.inline)
         .onChange(of: hasDueDate) { _, on in todo.dueDate = on ? dueDate : nil }
@@ -147,7 +148,7 @@ struct PrerequisitePickerView: View {
                             .foregroundStyle(.primary)
                         Spacer()
                         if candidate.isCompleted {
-                            Image(systemName: "checkmark").foregroundStyle(.green)
+                            Image(systemName: "checkmark").foregroundStyle(SketchTheme.Color.ink)
                         }
                     }
                 }

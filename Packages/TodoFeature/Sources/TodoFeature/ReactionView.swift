@@ -83,8 +83,13 @@ private struct EmojiButton: View {
                 .font(SketchTheme.headline)
                 .frame(width: 44, height: 44)
                 .background(
-                    isSelected ? Color.blue.opacity(0.15) : Color.clear,
+                    isSelected ? SketchTheme.Color.ink.opacity(0.15) : Color.clear,
                     in: Circle()
+                )
+                .overlay(
+                    Circle()
+                        .stroke(SketchTheme.Color.ink.opacity(isSelected ? 0 : 0.3),
+                                lineWidth: 1.2)
                 )
                 .scaleEffect(isSelected ? 1.15 : 1.0)
                 .animation(.spring(response: 0.25, dampingFraction: 0.6), value: isSelected)
@@ -157,16 +162,16 @@ private struct ReactionBubble: View {
                 if count > 1 {
                     Text("\(count)")
                         .font(.caption2.weight(.medium))
-                        .foregroundStyle(isMine ? .white : .primary)
+                        .foregroundStyle(isMine ? SketchTheme.Color.paper : .primary)
                 }
             }
             .padding(.horizontal, 8)
             .padding(.vertical, 3)
             .background(
-                isMine ? Color.blue : Color.secondary.opacity(0.12),
+                isMine ? SketchTheme.Color.ink : Color.secondary.opacity(0.12),
                 in: Capsule()
             )
-            .foregroundStyle(isMine ? .white : .primary)
+            .foregroundStyle(isMine ? SketchTheme.Color.paper : .primary)
         }
         .buttonStyle(.plain)
         .popover(isPresented: $showTooltip) {
