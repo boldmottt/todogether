@@ -80,7 +80,7 @@ public struct InviteCodeSection: View {
                         }
                     } label: {
                         Image(systemName: copied ? "checkmark.circle.fill" : "doc.on.doc")
-                            .foregroundStyle(copied ? .green : .blue)
+                            .foregroundStyle(SketchTheme.Color.ink)
                     }
                     .buttonStyle(.plain)
                 }
@@ -139,7 +139,7 @@ public struct JoinByCodeView: View {
                     Text("초대 코드")
                 } footer: {
                     if let err = errorMessage {
-                        Text(err).foregroundStyle(.red)
+                        Text(err).foregroundStyle(SketchTheme.Color.accent)
                     }
                 }
             }

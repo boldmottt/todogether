@@ -26,9 +26,9 @@ public struct SpaceListView: View {
                     Text("공유방을 만들거나 초대 코드로 참여해보세요")
                 } actions: {
                     Button("공유방 만들기") { showCreateSheet = true }
-                        .buttonStyle(.borderedProminent)
+                        .buttonStyle(SketchFilledButtonStyle())
                     Button("코드로 참여") { showJoinSheet = true }
-                        .buttonStyle(.bordered)
+                        .buttonStyle(SketchOutlineButtonStyle())
                 }
             }
         }

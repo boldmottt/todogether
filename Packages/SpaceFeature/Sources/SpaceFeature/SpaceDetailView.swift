@@ -148,7 +148,7 @@ struct MemberRow: View {
                 Text("대기 중")
                     .font(SketchTheme.caption)
                     .padding(.horizontal, 6).padding(.vertical, 2)
-                    .background(.yellow.opacity(0.25), in: Capsule())
+                    .background(SketchTheme.Color.highlight, in: Capsule())
             }
         }
     }

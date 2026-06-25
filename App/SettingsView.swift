@@ -23,7 +23,7 @@ struct SettingsView: View {
                     HStack {
                         Image(systemName: "person.crop.circle.fill")
                             .font(SketchTheme.headline)
-                            .foregroundStyle(.blue)
+                            .foregroundStyle(SketchTheme.Color.ink)
                         VStack(alignment: .leading, spacing: 2) {
                             Text(signIn.currentUser.name)
                                 .font(SketchTheme.headline)

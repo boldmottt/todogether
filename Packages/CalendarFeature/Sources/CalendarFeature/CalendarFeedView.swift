@@ -98,8 +98,8 @@ struct DayCell: View {
             Text(date.formatted(.dateTime.day()))
                 .font(.subheadline.weight(isToday ? .bold : .regular))
                 .frame(width: 32, height: 32)
-                .background(isSelected ? Color.blue : Color.clear, in: Circle())
-                .foregroundStyle(isSelected ? .white : isToday ? .blue : .primary)
+                .background(isSelected ? SketchTheme.Color.ink : Color.clear, in: Circle())
+                .foregroundStyle(isSelected ? SketchTheme.Color.paper : isToday ? SketchTheme.Color.ink : .primary)
             DotRow(colors: dotColors)
                 .frame(height: 6)
         }
@@ -219,8 +219,8 @@ struct MonthDayCell: View {
             Text(date.formatted(.dateTime.day()))
                 .font(.subheadline.weight(isToday ? .bold : .regular))
                 .frame(width: 30, height: 30)
-                .background(isSelected ? Color.blue : Color.clear, in: Circle())
-                .foregroundStyle(isSelected ? .white : isToday ? .blue : .primary)
+                .background(isSelected ? SketchTheme.Color.ink : Color.clear, in: Circle())
+                .foregroundStyle(isSelected ? SketchTheme.Color.paper : isToday ? SketchTheme.Color.ink : .primary)
             DotRow(colors: dotColors)
                 .frame(height: 6)
         }
@@ -252,7 +252,7 @@ struct DayFeedView: View {
                             }
                         } header: {
                             Text(section.kind.title)
-                                .foregroundStyle(section.kind == .overdue ? Color.red : .secondary)
+                                .foregroundStyle(section.kind == .overdue ? SketchTheme.Color.accent : .secondary)
                         }
                     }
                 }
@@ -268,22 +268,11 @@ struct FeedRowView: View {
     let isOverdue: Bool
 
     var body: some View {
-        HStack(spacing: 8) {
-            // H3: 공유방 색 점
-            if let space = todo.space {
-                Circle()
-                    .fill(Color(hex: space.colorHex))
-                    .frame(width: 8, height: 8)
-            } else {
-                Circle()
-                    .fill(Color.clear)
-                    .frame(width: 8, height: 8)
-            }
-            TodoRowView(todo: todo)
-        }
+        // 공유방 색 점은 TodoRowView 내부에서 이미 렌더링됨 → 중복 제거 (C3)
+        TodoRowView(todo: todo)
         .listRowBackground(
             isOverdue
-                ? RuledRowBackground(seed: todo.id.hashValue, paperColor: Color.red.opacity(0.05))
+                ? RuledRowBackground(seed: todo.id.hashValue, paperColor: SketchTheme.Color.accent.opacity(0.05))
                 : RuledRowBackground(seed: todo.id.hashValue)
         )
     }
