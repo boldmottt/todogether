@@ -102,6 +102,14 @@ struct ContentView: View {
         let tabBarAppearance = UITabBarAppearance()
         tabBarAppearance.configureWithOpaqueBackground()
         tabBarAppearance.backgroundColor = paper
+        // 탭바 라벨도 Noteworthy로 통일
+        let tabItem = tabBarAppearance.stackedLayoutAppearance
+        tabItem.normal.titleTextAttributes = [
+            .font: UIFont(name: "Noteworthy", size: 10) ?? UIFont.systemFont(ofSize: 10)
+        ]
+        tabItem.selected.titleTextAttributes = [
+            .font: UIFont(name: "Noteworthy-Bold", size: 10) ?? UIFont.boldSystemFont(ofSize: 10)
+        ]
         UITabBar.appearance().standardAppearance = tabBarAppearance
         UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
         UITabBar.appearance().tintColor = inkColor
