@@ -323,6 +323,58 @@ public struct SketchFontEnvironment: ViewModifier {
     }
 }
 
+// MARK: - 버튼 스타일 (도들 노트패드)
+// 잉크 온 페이퍼 — 시스템 .borderedProminent(파란 틴트) 대체용.
+public struct SketchFilledButtonStyle: ButtonStyle {
+    public init() {}
+    public func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(SketchTheme.headline)
+            .foregroundStyle(SketchTheme.Color.paper)
+            .frame(maxWidth: .infinity)
+            .padding(14)
+            .background(
+                RoundedRectangle(cornerRadius: 6)
+                    .fill(SketchTheme.Color.ink)
+            )
+            .opacity(configuration.isPressed ? 0.85 : 1)
+            .scaleEffect(configuration.isPressed ? 0.98 : 1)
+            .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
+    }
+}
+
+public struct SketchOutlineButtonStyle: ButtonStyle {
+    public init() {}
+    public func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(SketchTheme.headline)
+            .foregroundStyle(SketchTheme.Color.ink)
+            .frame(maxWidth: .infinity)
+            .padding(14)
+            .background(
+                RoundedRectangle(cornerRadius: 6)
+                    .fill(SketchTheme.Color.paper)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 6)
+                    .stroke(SketchTheme.Color.ink, lineWidth: 1.5)
+            )
+            .opacity(configuration.isPressed ? 0.7 : 1)
+            .scaleEffect(configuration.isPressed ? 0.98 : 1)
+            .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
+    }
+}
+
+// MARK: - Form / 시트 공통 스타일 (종이 배경 + 잉크 틴트)
+public struct SketchFormStyle: ViewModifier {
+    public func body(content: Content) -> some View {
+        content
+            .scrollContentBackground(.hidden)
+            .background(RuledBackground())
+            .tint(SketchTheme.Color.ink)
+    }
+}
+
 // MARK: - View extensions
 public extension View {
     func sketchCard(tilt: Double = 0, seed: Int = 0) -> some View {
@@ -334,5 +386,9 @@ public extension View {
     /// 앱 루트에 한 번 적용 — 모든 .font(.body/.caption 등)을 Noteworthy로 교체
     func sketchFontEnvironment() -> some View {
         modifier(SketchFontEnvironment())
+    }
+    /// Form / 시트에 종이 배경 + 잉크 틴트를 공통 적용
+    func sketchForm() -> some View {
+        modifier(SketchFormStyle())
     }
 }
