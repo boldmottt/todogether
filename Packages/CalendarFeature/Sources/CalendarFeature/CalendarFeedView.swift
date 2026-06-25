@@ -104,6 +104,7 @@ struct DayCell: View {
                 .frame(height: 6)
         }
         .frame(width: 40)
+        .contentShape(Rectangle())
     }
 }
 
@@ -135,12 +136,20 @@ struct MonthCalendarView: View {
         VStack(spacing: 8) {
             // 월 이동 헤더
             HStack {
-                Button { shiftMonth(-1) } label: { Image(systemName: "chevron.left") }
+                Button { shiftMonth(-1) } label: {
+                    Image(systemName: "chevron.left")
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
+                }
                 Spacer()
                 Text(monthAnchor.formatted(.dateTime.year().month()))
                     .font(SketchTheme.headline)
                 Spacer()
-                Button { shiftMonth(1) } label: { Image(systemName: "chevron.right") }
+                Button { shiftMonth(1) } label: {
+                    Image(systemName: "chevron.right")
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
+                }
             }
             .padding(.horizontal)
 
