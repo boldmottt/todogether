@@ -96,7 +96,7 @@ struct AppleSignInView: View {
             VStack(spacing: 12) {
                 Image(systemName: "checklist.checked")
                     .font(.system(size: 64))
-                    .foregroundStyle(.blue)
+                    .foregroundStyle(SketchTheme.Color.ink)
                 Text("todogether")
                     .font(SketchTheme.title)
                 Text("함께 만드는 할 일 목록")
@@ -125,7 +125,7 @@ struct AppleSignInView: View {
                     onSkip()
                 }
                 .font(SketchTheme.body)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(SketchTheme.Color.softInk)
             }
             .padding(.horizontal, 32)
 

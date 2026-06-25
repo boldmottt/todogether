@@ -22,7 +22,7 @@ struct OnboardingView: View {
                     VStack(spacing: 20) {
                         Image(systemName: p.symbol)
                             .font(.system(size: 64))
-                            .foregroundStyle(.tint)
+                            .foregroundStyle(SketchTheme.Color.ink)
                         Text(p.title).font(SketchTheme.title)
                         Text(p.body)
                             .font(SketchTheme.body)
@@ -39,12 +39,13 @@ struct OnboardingView: View {
                 if page == pages.count - 1 { onFinish() }
                 else { withAnimation { page += 1 } }
             }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
+            .buttonStyle(SketchFilledButtonStyle())
+            .padding(.horizontal, 32)
             .padding(.bottom, 32)
 
             if page < pages.count - 1 {
                 Button("건너뛰기", action: onFinish)
+                    .foregroundStyle(SketchTheme.Color.softInk)
                     .padding(.bottom, 8)
             }
         }

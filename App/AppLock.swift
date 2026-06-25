@@ -57,10 +57,13 @@ struct LockScreenView: View {
         ZStack {
             Rectangle().fill(.ultraThickMaterial).ignoresSafeArea()
             VStack(spacing: 16) {
-                Image(systemName: "lock.fill").font(.system(size: 48))
+                Image(systemName: "lock.fill")
+                    .font(.system(size: 48))
+                    .foregroundStyle(SketchTheme.Color.ink)
                 Text("todogether 잠김").font(SketchTheme.headline)
                 Button("잠금 해제", action: onUnlock)
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(SketchFilledButtonStyle())
+                    .padding(.horizontal, 48)
             }
         }
     }
